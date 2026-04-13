@@ -37,6 +37,8 @@ On first login you are forced to set up MFA with Microsoft Authenticator.
 3. Enter a valid 6-digit TOTP code.
 4. MFA is enabled and you are redirected to `/admin/dashboard`.
 
+> Note: Phase 1 uses Google Charts URL rendering for the QR code, which sends the provisioning URI to Google to generate the image. This is kept intentionally to match the specified implementation.
+
 ## Directory Structure
 
 ```text

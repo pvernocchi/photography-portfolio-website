@@ -17,9 +17,19 @@ $pdo = new PDO($dsn, $db['user'], $db['pass'], [
 
 $username = 'admin';
 $email = 'admin@vernocchi.es';
-$passwordHash = password_hash('changeme', PASSWORD_BCRYPT);
+$checkStatement = $pdo->prepare('SELECT id FROM users WHERE username = :username OR email = :email LIMIT 1');
+$checkStatement->execute([
+    ':username' => $username,
+    ':email' => $email,
+]);
 
-$statement = $pdo->prepare('INSERT INTO users (username, email, password_hash, mfa_enabled) VALUES (:username, :email, :password_hash, 0) ON DUPLICATE KEY UPDATE password_hash = VALUES(password_hash), mfa_enabled = 0, totp_secret = NULL');
+if ($checkStatement->fetch()) {
+    echo "Admin user already exists. Seed skipped to avoid resetting credentials or MFA settings.\n";
+    exit(0);
+}
+
+$passwordHash = password_hash('changeme', PASSWORD_BCRYPT);
+$statement = $pdo->prepare('INSERT INTO users (username, email, password_hash, mfa_enabled) VALUES (:username, :email, :password_hash, 0)');
 $statement->execute([
     ':username' => $username,
     ':email' => $email,

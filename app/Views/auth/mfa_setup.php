@@ -5,8 +5,8 @@ use App\Core\CSRF;
 ?>
 <div class="auth-wrap">
     <section class="card auth-card">
-        <h1>Set up Microsoft Authenticator</h1>
-        <p>Scan this QR code with Microsoft Authenticator, then enter the 6-digit code to confirm setup.</p>
+        <h1>Set up Authenticator App</h1>
+        <p>Scan this QR code with Microsoft Authenticator (or any TOTP-compatible authenticator app), then enter the 6-digit code to confirm setup.</p>
 
         <?php if (!empty($error)): ?>
             <div class="alert alert-error"><?= e($error) ?></div>

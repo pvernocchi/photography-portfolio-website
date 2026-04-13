@@ -84,7 +84,28 @@ set_exception_handler(static function (Throwable $throwable) use ($debug): void 
 });
 
 set_error_handler(static function (int $severity, string $message, string $file, int $line): bool {
-    throw new ErrorException($message, 0, $severity, $file, $line);
+    if (!(error_reporting() & $severity)) {
+        return false;
+    }
+
+    $convertToException = [
+        E_ERROR,
+        E_WARNING,
+        E_PARSE,
+        E_CORE_ERROR,
+        E_CORE_WARNING,
+        E_COMPILE_ERROR,
+        E_COMPILE_WARNING,
+        E_USER_ERROR,
+        E_USER_WARNING,
+        E_RECOVERABLE_ERROR,
+    ];
+
+    if (in_array($severity, $convertToException, true)) {
+        throw new ErrorException($message, 0, $severity, $file, $line);
+    }
+
+    return false;
 });
 
 Session::start();
