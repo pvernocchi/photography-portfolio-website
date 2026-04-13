@@ -71,6 +71,103 @@ class FrontendController extends Controller
         ], 'frontend');
     }
 
+    public function contact(): void
+    {
+        $locale = Language::locale();
+        $siteTitle = (string) Setting::get('site_title', 'Vernocchi Photography');
+        $contactEmail = (string) Setting::get('contact_email', '');
+        $siteDescription = (string) Setting::get('site_description_' . $locale, '');
+
+        $this->render('frontend/contact', [
+            'title' => __('contact.title'),
+            'siteTitle' => $siteTitle,
+            'contactEmail' => $contactEmail,
+            'siteDescription' => $siteDescription,
+            'locale' => $locale,
+            'theme' => ThemeEngine::activeTheme(),
+            'metaDescription' => $this->metaDescription(),
+            'gaId' => (string) Setting::get('google_analytics_id', ''),
+            'csrfToken' => \App\Core\CSRF::token(),
+            'pageScripts' => ['/assets/js/contact-form.js'],
+        ], 'frontend');
+    }
+
+    public function sendContact(): void
+    {
+        // Validate CSRF token
+        if (!isset($_POST['csrf_token']) || !\App\Core\CSRF::verify((string) $_POST['csrf_token'])) {
+            http_response_code(403);
+            echo json_encode(['success' => false, 'message' => 'Invalid request']);
+            return;
+        }
+
+        // Honeypot check
+        if (!empty($_POST['website'])) {
+            http_response_code(200);
+            echo json_encode(['success' => true, 'message' => __('contact.success')]);
+            return;
+        }
+
+        $name = trim((string) ($_POST['name'] ?? ''));
+        $email = trim((string) ($_POST['email'] ?? ''));
+        $message = trim((string) ($_POST['message'] ?? ''));
+
+        // Basic validation
+        if ($name === '' || $email === '' || $message === '') {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'message' => __('contact.error')]);
+            return;
+        }
+
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'message' => __('contact.error')]);
+            return;
+        }
+
+        // Sanitize inputs to prevent email header injection
+        $name = str_replace(["\r", "\n", "%0a", "%0d"], '', $name);
+        $email = str_replace(["\r", "\n", "%0a", "%0d"], '', $email);
+        $message = str_replace(["\r\n", "\r"], "\n", $message);
+
+        $contactEmail = (string) Setting::get('contact_email', '');
+        $siteTitle = (string) Setting::get('site_title', 'Photography Portfolio');
+        
+        if ($contactEmail === '') {
+            http_response_code(500);
+            echo json_encode(['success' => false, 'message' => __('contact.error')]);
+            return;
+        }
+
+        // Prepare email with safe headers
+        // Additional sanitization for subject line to prevent injection
+        $safeName = mb_substr($name, 0, 50);
+        $subject = str_replace(["\r", "\n"], '', 'Contact form: ' . $safeName);
+        $body = "Contact Form Submission\n";
+        $body .= "========================\n\n";
+        $body .= "Name: {$name}\n";
+        $body .= "Email: {$email}\n\n";
+        $body .= "Message:\n{$message}\n\n";
+        $body .= "Sent from: {$siteTitle}";
+        
+        // Use site email as From, user email only in Reply-To for security
+        $headers = "From: {$siteTitle} <{$contactEmail}>\r\n";
+        $headers .= "Reply-To: {$email}\r\n";
+        $headers .= "X-Mailer: PHP/" . phpversion() . "\r\n";
+        $headers .= "Content-Type: text/plain; charset=UTF-8";
+
+        // Send email
+        $sent = mail($contactEmail, $subject, $body, $headers);
+
+        header('Content-Type: application/json');
+        if ($sent) {
+            echo json_encode(['success' => true, 'message' => __('contact.success')]);
+        } else {
+            http_response_code(500);
+            echo json_encode(['success' => false, 'message' => __('contact.error')]);
+        }
+    }
+
     public function switchLanguage(string $locale): void
     {
         Language::setLocale($locale);

@@ -17,6 +17,7 @@ $navCategories = \App\Models\Category::visible();
             <?php endif; ?>
         </div>
         <a href="/about"><?= e(__('nav.about')) ?></a>
+        <a href="/contact"><?= e(__('nav.contact')) ?></a>
         <a href="/lang/es">ES 🇪🇸</a>
         <a href="/lang/en">EN 🇬🇧</a>
         <button class="theme-toggle" type="button" id="theme-toggle" aria-label="Switch to dark mode">🌙</button>
