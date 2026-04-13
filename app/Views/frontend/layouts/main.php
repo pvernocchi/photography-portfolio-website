@@ -33,6 +33,8 @@ $gaId = trim((string) ($gaId ?? ''));
 <?php include BASE_PATH . '/app/Views/frontend/partials/nav.php'; ?>
 <main class="front-main"><?= $content ?></main>
 <?php include BASE_PATH . '/app/Views/frontend/partials/footer.php'; ?>
+<script src="/assets/js/mobile-menu.js" defer></script>
+<script src="/assets/js/image-loading.js" defer></script>
 <script src="/assets/js/lightbox.js" defer></script>
 <script src="/assets/js/theme-toggle.js" defer></script>
 <?php include BASE_PATH . '/app/Views/frontend/partials/image-protection.php'; ?>
