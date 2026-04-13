@@ -71,7 +71,7 @@ set_exception_handler(static function (Throwable $throwable) use ($debug): void 
 
     $logDir = BASE_PATH . '/storage/logs';
     if (!is_dir($logDir)) {
-        mkdir($logDir, 0775, true);
+        mkdir($logDir, 0755, true);
     }
 
     error_log(

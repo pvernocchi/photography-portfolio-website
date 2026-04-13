@@ -29,6 +29,7 @@ Plain PHP 8.1 MVC foundation for the Vernocchi Photography portfolio admin and p
 - Password: `changeme`
 
 On first login you are forced to set up MFA with Microsoft Authenticator.
+Change the default password immediately after first login in production environments.
 
 ## MFA Setup Flow
 

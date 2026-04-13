@@ -15,6 +15,7 @@ return [
         'charset' => 'utf8mb4',
     ],
     'session' => [
+        'name' => 'vernocchi_session',
         'lifetime' => 1800,
         'remember_days' => 30,
     ],

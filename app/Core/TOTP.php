@@ -62,6 +62,8 @@ class TOTP
 
     public static function getQRCodeUrl(string $provisioningUri): string
     {
+        // Security note: this sends the provisioning URI (including TOTP secret) to Google Charts.
+        // Kept in Phase 1 intentionally to match the project requirements.
         return 'https://chart.googleapis.com/chart?cht=qr&chs=220x220&chl=' . rawurlencode($provisioningUri);
     }
 

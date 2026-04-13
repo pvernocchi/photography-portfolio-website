@@ -14,7 +14,10 @@ use App\Core\CSRF;
 
         <div class="qr-block">
             <img src="<?= e($qrUrl) ?>" alt="MFA QR Code" width="220" height="220">
-            <p><strong>Manual key:</strong> <code><?= e($secret) ?></code></p>
+            <details>
+                <summary>Show manual key</summary>
+                <p><strong>Manual key:</strong> <code><?= e($secret) ?></code></p>
+            </details>
         </div>
 
         <form method="post" action="/admin/mfa/setup" class="form-stack">

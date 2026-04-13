@@ -22,7 +22,8 @@ class Session
             'samesite' => 'Strict',
         ]);
 
-        session_name('vernocchi_session');
+        $sessionName = (string) app_config('session.name', 'vernocchi_session');
+        session_name($sessionName);
         session_start();
 
         $lifetime = (int) app_config('session.lifetime', 1800);

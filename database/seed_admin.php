@@ -37,3 +37,4 @@ $statement->execute([
 ]);
 
 echo "Default admin user seeded successfully.\nUsername: admin\nPassword: changeme\n";
+echo "IMPORTANT: Change the default password immediately after first login.\n";
