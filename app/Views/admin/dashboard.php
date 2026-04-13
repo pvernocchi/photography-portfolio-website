@@ -1,5 +1,6 @@
 <?php
 declare(strict_types=1);
+$stats = $stats ?? [];
 ?>
 <header class="page-header">
     <h1>Welcome, <?= e($user['username'] ?? 'admin') ?></h1>
@@ -10,25 +11,9 @@ declare(strict_types=1);
 <?php endif; ?>
 
 <section class="cards-grid">
-    <article class="card">
-        <h2>Categories</h2>
-        <p>Phase 2 placeholder for category management.</p>
-    </article>
-    <article class="card">
-        <h2>Images</h2>
-        <p>Phase 2 placeholder for image uploads and ordering.</p>
-    </article>
-    <article class="card">
-        <h2>Settings</h2>
-        <p>Phase 4 placeholder for site and theme settings.</p>
-    </article>
-</section>
-
-<section class="card mt-24">
-    <h2>Stats (Placeholder)</h2>
-    <ul>
-        <li>Total categories: —</li>
-        <li>Total images: —</li>
-        <li>Last login: —</li>
-    </ul>
+    <article class="card"><h2>Total categories</h2><p><?= (int) ($stats['categories'] ?? 0) ?></p></article>
+    <article class="card"><h2>Total images</h2><p><?= (int) ($stats['images'] ?? 0) ?></p></article>
+    <article class="card"><h2>Total storage</h2><p><?= number_format(((int) ($stats['storage'] ?? 0)) / 1024 / 1024, 2) ?> MB</p></article>
+    <article class="card"><h2>Current theme</h2><p><?= e((string) ($stats['theme'] ?? 'minimal-light')) ?></p></article>
+    <article class="card"><h2>MFA status</h2><p><?= e((string) ($stats['mfa'] ?? 'Disabled')) ?></p></article>
 </section>

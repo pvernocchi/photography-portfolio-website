@@ -9,7 +9,9 @@ abstract class Controller
     {
         extract($data, EXTR_SKIP);
 
-        $viewPath = BASE_PATH . '/app/Views/' . $view . '.php';
+        $viewPath = $layout === 'frontend'
+            ? ThemeEngine::resolveTemplate($view)
+            : BASE_PATH . '/app/Views/' . $view . '.php';
         if (!is_file($viewPath)) {
             http_response_code(500);
             echo 'View not found.';

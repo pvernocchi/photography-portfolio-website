@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 use App\Core\Auth;
+use App\Core\Language;
 use App\Core\Session;
 
 const BASE_PATH = __DIR__ . '/..';
@@ -57,6 +58,11 @@ function e(mixed $value): string
     return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
 }
 
+function __(string $key, ?string $locale = null): string
+{
+    return Language::translate($key, $locale);
+}
+
 $debug = (bool) app_config('app.debug', false);
 ini_set('display_errors', $debug ? '1' : '0');
 error_reporting(E_ALL);
@@ -109,4 +115,5 @@ set_error_handler(static function (int $severity, string $message, string $file,
 });
 
 Session::start();
+Language::fromCookie();
 Auth::checkRememberToken();

@@ -6,6 +6,7 @@ return [
         'name' => 'Vernocchi Photography',
         'url' => 'https://vernocchi.es',
         'debug' => false,
+        'default_language' => 'es',
     ],
     'database' => [
         'host' => 'localhost',

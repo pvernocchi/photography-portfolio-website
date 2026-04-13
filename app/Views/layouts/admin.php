@@ -21,8 +21,9 @@ $appName = (string) app_config('app.name', 'Vernocchi Photography');
         <div class="brand"><?= e($appName) ?></div>
         <nav>
             <a href="/admin/dashboard">Dashboard</a>
-            <a href="#" aria-disabled="true">Categories (Phase 2)</a>
-            <a href="#" aria-disabled="true">Settings (Phase 4)</a>
+            <a href="/admin/categories">Categories</a>
+            <a href="/admin/settings">Settings</a>
+            <a href="/admin/settings/password">Password</a>
             <?php if (Auth::check() || Auth::hasPartialSession()): ?>
                 <a href="/admin/logout">Logout</a>
             <?php endif; ?>
@@ -32,6 +33,6 @@ $appName = (string) app_config('app.name', 'Vernocchi Photography');
         <?= $content ?>
     </main>
 </div>
-<script src="/assets/js/admin.js"></script>
+<script src="/assets/js/admin.js" defer></script>
 </body>
 </html>
