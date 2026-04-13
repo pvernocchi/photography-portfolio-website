@@ -8,6 +8,17 @@ document.addEventListener('DOMContentLoaded', () => {
   const canvas = document.getElementById('lightbox-canvas');
   const ctx = canvas.getContext('2d');
   const counter = lightbox.querySelector('[data-lightbox-counter]');
+  const thumbLoaders = new Map();
+  const thumbnailObserver = 'IntersectionObserver' in window
+    ? new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        thumbnailObserver.unobserve(entry.target);
+        const loadThumb = thumbLoaders.get(entry.target);
+        if (loadThumb) loadThumb();
+      });
+    }, { rootMargin: '200px' })
+    : null;
   let current = 0;
   let touchStartX = 0;
   lightbox.hidden = true;
@@ -86,14 +97,9 @@ document.addEventListener('DOMContentLoaded', () => {
       thumb.onload = () => paintThumbnail(localCtx, canvasEl, thumb);
       thumb.src = thumbSrc;
     };
-    if ('IntersectionObserver' in window) {
-      const observer = new IntersectionObserver((entries) => {
-        if (entries.some((entry) => entry.isIntersecting)) {
-          observer.disconnect();
-          loadThumb();
-        }
-      }, { rootMargin: '200px' });
-      observer.observe(item);
+    if (thumbnailObserver) {
+      thumbLoaders.set(item, loadThumb);
+      thumbnailObserver.observe(item);
     } else {
       loadThumb();
     }
