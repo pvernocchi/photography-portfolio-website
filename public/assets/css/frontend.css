@@ -15,12 +15,10 @@ a { color: inherit; text-decoration: none; }
 .image-item { cursor: zoom-in; }
 .image-overlay { position: absolute; inset: 0; background: transparent; pointer-events: none; }
 .protected-canvas { width: 100%; height: 220px; display: block; }
-.source-image { width: 100%; height: 100%; object-fit: cover; display: block; }
 .protected-gallery { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: .75rem; }
 .protected-gallery .gallery-card { aspect-ratio: 1 / 1; }
 .protected-gallery .protected-canvas { width: 100%; height: 100%; object-fit: cover; position: relative; z-index: 1; }
-.protected-gallery .source-image { position: absolute; inset: 0; z-index: 0; }
-.protected-gallery .protected-canvas { cursor: zoom-in; }
+.protected-gallery .gallery-source-image { width: 100%; height: 100%; object-fit: cover; display: block; position: absolute; inset: 0; z-index: 0; }
 .card-front { background: var(--card); border-radius: 12px; padding: 1rem; }
 .front-footer { text-align: center; padding: 1rem; color: var(--muted); }
 .lightbox { position: fixed; inset: 0; background: rgba(0,0,0,.94); display: grid; grid-template-columns: auto 1fr auto; align-items: center; z-index: 60; }

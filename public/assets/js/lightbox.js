@@ -75,7 +75,7 @@ document.addEventListener('DOMContentLoaded', () => {
   categoryItems.forEach((item, idx) => {
     item.addEventListener('click', () => open(idx));
     const canvasEl = item.querySelector('canvas');
-    const source = item.querySelector('.source-image');
+    const source = item.querySelector('.gallery-source-image');
     if (!canvasEl || !source) return;
     const localCtx = canvasEl.getContext('2d');
     if (!localCtx) return;
