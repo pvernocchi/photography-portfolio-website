@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const counter = lightbox.querySelector('[data-lightbox-counter]');
   let current = 0;
   let touchStartX = 0;
+  const observers = [];
   lightbox.hidden = true;
 
   const paintThumbnail = (localCtx, canvasEl, source) => {
@@ -75,8 +76,29 @@ document.addEventListener('DOMContentLoaded', () => {
     const source = item.querySelector('.source-image');
     if (!canvasEl || !source) return;
     const localCtx = canvasEl.getContext('2d');
-    source.addEventListener('load', () => paintThumbnail(localCtx, canvasEl, source));
-    if (source.complete) source.dispatchEvent(new Event('load'));
+    const thumbSrc = source.currentSrc || source.getAttribute('src');
+    if (!thumbSrc) return;
+    let loaded = false;
+    const loadThumb = () => {
+      if (loaded) return;
+      loaded = true;
+      const thumb = new Image();
+      thumb.decoding = 'async';
+      thumb.onload = () => paintThumbnail(localCtx, canvasEl, thumb);
+      thumb.src = thumbSrc;
+    };
+    if ('IntersectionObserver' in window) {
+      const observer = new IntersectionObserver((entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          observer.disconnect();
+          loadThumb();
+        }
+      }, { rootMargin: '200px' });
+      observer.observe(item);
+      observers.push(observer);
+    } else {
+      loadThumb();
+    }
   });
 
   lightbox.querySelector('[data-lightbox-close]').addEventListener('click', close);
@@ -96,4 +118,5 @@ document.addEventListener('DOMContentLoaded', () => {
     if (delta > 60) prev();
     if (delta < -60) next();
   });
+  window.addEventListener('beforeunload', () => { observers.forEach((observer) => observer.disconnect()); });
 });
