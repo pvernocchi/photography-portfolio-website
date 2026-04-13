@@ -1,1 +1,51 @@
-.gallery-card{box-shadow:none;transition:transform .2s,opacity .2s}.gallery-card:hover{transform:scale(1.01);opacity:.94}
+/* ============================================
+   MINIMAL LIGHT THEME
+   Pure, clean aesthetic with maximum whitespace
+   ============================================ */
+
+:root {
+  /* Override colors for pure white aesthetic */
+  --color-bg-primary: #ffffff;
+  --color-bg-secondary: #fafafa;
+  --color-bg-tertiary: #f5f5f5;
+  --color-border-light: #eeeeee;
+  --color-border-medium: #e0e0e0;
+}
+
+.gallery-card {
+  box-shadow: none;
+  border: 1px solid var(--color-border-light);
+  transition: all var(--transition-base);
+}
+
+.gallery-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--color-border-medium);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Clean button style */
+.btn-front,
+.btn-primary {
+  box-shadow: none;
+  border: 2px solid var(--color-primary);
+}
+
+.btn-front:hover,
+.btn-primary:hover {
+  background: transparent;
+  color: var(--color-primary);
+  box-shadow: none;
+}
+
+/* Subtle navigation */
+.front-nav {
+  background: rgba(255, 255, 255, 0.98);
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+/* Card refinement */
+.card-front {
+  border: 1px solid var(--color-border-light);
+  box-shadow: none;
+}

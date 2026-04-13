@@ -1,2 +1,66 @@
-.gallery-grid{grid-template-columns:repeat(12,1fr)}.gallery-card{grid-column:span 4}.gallery-card:nth-child(6n+1){grid-column:span 8}.gallery-card:nth-child(6n+3){grid-column:span 6}h1,h2{letter-spacing:.02em}
-@media (max-width:900px){.gallery-grid{grid-template-columns:repeat(2,1fr)}.gallery-card,.gallery-card:nth-child(6n+1),.gallery-card:nth-child(6n+3){grid-column:span 1}}
+/* ============================================
+   EDITORIAL THEME
+   Magazine-style layout with bold typography
+   ============================================ */
+
+:root {
+  /* Editorial color refinements */
+  --font-weight-heading: 800;
+  --letter-spacing-heading: -0.03em;
+}
+
+.gallery-grid {
+  grid-template-columns: repeat(12, 1fr);
+  gap: var(--space-4);
+}
+
+.gallery-card {
+  grid-column: span 4;
+}
+
+/* Create editorial layout pattern */
+.gallery-card:nth-child(6n+1) {
+  grid-column: span 8;
+}
+
+.gallery-card:nth-child(6n+3) {
+  grid-column: span 6;
+}
+
+.gallery-card:nth-child(6n+4) {
+  grid-column: span 6;
+}
+
+/* Bold typography */
+h1, h2, h3 {
+  letter-spacing: var(--letter-spacing-heading);
+  font-weight: var(--font-weight-heading);
+}
+
+h1 {
+  font-size: clamp(var(--font-size-4xl), 7vw, var(--font-size-5xl));
+}
+
+/* Refined card style for editorial feel */
+.gallery-card {
+  border-radius: var(--radius-md);
+}
+
+.gallery-card h2 {
+  font-size: var(--font-size-xl);
+  padding: var(--space-5) var(--space-4);
+}
+
+/* Responsive adjustments */
+@media (max-width: 900px) {
+  .gallery-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .gallery-card,
+  .gallery-card:nth-child(6n+1),
+  .gallery-card:nth-child(6n+3),
+  .gallery-card:nth-child(6n+4) {
+    grid-column: span 1;
+  }
+}
