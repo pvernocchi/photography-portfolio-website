@@ -35,10 +35,14 @@ a { color: inherit; text-decoration: none; }
 .nav-dropdown-menu a { display: block; padding: .4rem .8rem; white-space: nowrap; }
 .nav-dropdown-menu a:hover { background: var(--card); }
 .nav-dropdown:hover .nav-dropdown-menu { display: block; }
+.theme-toggle { background: transparent; border: 0; cursor: pointer; font-size: 1rem; padding: 0; line-height: 1; }
+html.dark .front-nav { background: rgba(26,26,26,.92); border-color: #333; }
+html.dark .nav-dropdown-menu { background: #1e1e1e; border-color: #333; }
 @media print { .gallery-card img, .protected-canvas, .lightbox { display: none !important; } }
 @media (max-width: 780px) {
   .menu-toggle { display: inline-block; border: 0; background: transparent; font-size: 1.2rem; }
   .menu-links { position: absolute; top: 56px; right: 10px; background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: .5rem; display: none; flex-direction: column; }
+  html.dark .menu-links { background: #1e1e1e; border-color: #333; }
   .front-nav:focus-within .menu-links, .front-nav:hover .menu-links { display: flex; }
   .nav-dropdown-menu { position: static; box-shadow: none; border: 0; padding-left: .8rem; }
   .nav-dropdown:hover .nav-dropdown-menu { display: block; }

@@ -26,7 +26,8 @@ $gaId = trim((string) ($gaId ?? ''));
     <link rel="canonical" href="<?= e($canonical) ?>">
     <link rel="stylesheet" href="/assets/css/frontend.css">
     <link rel="stylesheet" href="/theme/style.css">
-    <link rel="stylesheet" href="/theme/dark.css" media="(prefers-color-scheme: dark)">
+    <link rel="stylesheet" href="/theme/dark.css">
+    <script>if(localStorage.getItem('theme')==='dark'){document.documentElement.classList.add('dark');}</script>
     <?php if ($gaId !== ''): ?>
         <script async src="https://www.googletagmanager.com/gtag/js?id=<?= e($gaId) ?>"></script>
         <script>
@@ -40,6 +41,17 @@ $gaId = trim((string) ($gaId ?? ''));
 <main class="front-main"><?= $content ?></main>
 <?php include BASE_PATH . '/app/Views/frontend/partials/footer.php'; ?>
 <script src="/assets/js/lightbox.js" defer></script>
+<script>
+(function(){
+    var btn = document.querySelector('.theme-toggle');
+    if (btn && document.documentElement.classList.contains('dark')) { btn.textContent = '☀️'; }
+    btn && btn.addEventListener('click', function() {
+        var isDark = document.documentElement.classList.toggle('dark');
+        localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        this.textContent = isDark ? '☀️' : '🌙';
+    });
+})();
+</script>
 <?php include BASE_PATH . '/app/Views/frontend/partials/image-protection.php'; ?>
 </body>
 </html>
