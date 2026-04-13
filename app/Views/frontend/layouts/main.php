@@ -27,7 +27,7 @@ $gaId = trim((string) ($gaId ?? ''));
     <link rel="stylesheet" href="/assets/css/frontend.css">
     <link rel="stylesheet" href="/theme/style.css">
     <link rel="stylesheet" href="/theme/dark.css">
-    <script>if(localStorage.getItem('theme')==='dark'){document.documentElement.classList.add('dark');}</script>
+    <script>try{if(localStorage.getItem('theme')==='dark'){document.documentElement.classList.add('dark');}}catch(e){}</script>
     <?php if ($gaId !== ''): ?>
         <script async src="https://www.googletagmanager.com/gtag/js?id=<?= e($gaId) ?>"></script>
         <script>
@@ -44,12 +44,14 @@ $gaId = trim((string) ($gaId ?? ''));
 <script>
 (function(){
     var btn = document.querySelector('.theme-toggle');
-    if (btn && document.documentElement.classList.contains('dark')) { btn.textContent = '☀️'; }
-    btn && btn.addEventListener('click', function() {
-        var isDark = document.documentElement.classList.toggle('dark');
-        localStorage.setItem('theme', isDark ? 'dark' : 'light');
-        this.textContent = isDark ? '☀️' : '🌙';
-    });
+    if (btn) {
+        if (document.documentElement.classList.contains('dark')) { btn.textContent = '☀️'; }
+        btn.addEventListener('click', function() {
+            var isDark = document.documentElement.classList.toggle('dark');
+            try { localStorage.setItem('theme', isDark ? 'dark' : 'light'); } catch(e) {}
+            this.textContent = isDark ? '☀️' : '🌙';
+        });
+    }
 })();
 </script>
 <?php include BASE_PATH . '/app/Views/frontend/partials/image-protection.php'; ?>
