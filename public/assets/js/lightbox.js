@@ -55,7 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
   lightbox.querySelector('[data-lightbox-close]').addEventListener('click', close);
   lightbox.querySelector('[data-lightbox-next]').addEventListener('click', next);
   lightbox.querySelector('[data-lightbox-prev]').addEventListener('click', prev);
-  lightbox.addEventListener('click', (e) => { if (e.target === lightbox) close(); });
+  lightbox.addEventListener('click', (e) => { if (e.target === lightbox || e.target === canvas) close(); });
   document.addEventListener('keydown', (e) => {
     if (lightbox.hidden) return;
     if (e.key === 'Escape') close();
