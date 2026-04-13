@@ -10,6 +10,33 @@ document.addEventListener('DOMContentLoaded', () => {
   const counter = lightbox.querySelector('[data-lightbox-counter]');
   let current = 0;
   let touchStartX = 0;
+  lightbox.hidden = true;
+
+  const paintThumbnail = (localCtx, canvasEl, source) => {
+    const imgW = source.naturalWidth;
+    const imgH = source.naturalHeight;
+    if (!imgW || !imgH) return;
+
+    const cW = canvasEl.width;
+    const cH = canvasEl.height;
+    const canvasRatio = cW / cH;
+    const imageRatio = imgW / imgH;
+    let sx = 0;
+    let sy = 0;
+    let sw = imgW;
+    let sh = imgH;
+
+    if (imageRatio > canvasRatio) {
+      sw = imgH * canvasRatio;
+      sx = (imgW - sw) / 2;
+    } else {
+      sh = imgW / canvasRatio;
+      sy = (imgH - sh) / 2;
+    }
+
+    localCtx.clearRect(0, 0, cW, cH);
+    localCtx.drawImage(source, sx, sy, sw, sh, 0, 0, cW, cH);
+  };
 
   const draw = (index) => {
     current = index;
@@ -48,7 +75,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const source = item.querySelector('.source-image');
     if (!canvasEl || !source) return;
     const localCtx = canvasEl.getContext('2d');
-    source.addEventListener('load', () => localCtx.drawImage(source, 0, 0, canvasEl.width, canvasEl.height));
+    source.addEventListener('load', () => paintThumbnail(localCtx, canvasEl, source));
     if (source.complete) source.dispatchEvent(new Event('load'));
   });
 
