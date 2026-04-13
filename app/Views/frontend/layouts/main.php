@@ -27,13 +27,6 @@ $gaId = trim((string) ($gaId ?? ''));
     <link rel="stylesheet" href="/assets/css/frontend.css">
     <link rel="stylesheet" href="/theme/style.css">
     <link rel="stylesheet" href="/theme/dark.css" media="(prefers-color-scheme: dark)">
-    <?php if ($gaId !== ''): ?>
-        <script async src="https://www.googletagmanager.com/gtag/js?id=<?= e($gaId) ?>"></script>
-        <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);} gtag('js', new Date()); gtag('config', '<?= e($gaId) ?>');
-        </script>
-    <?php endif; ?>
 </head>
 <body>
 <?php include BASE_PATH . '/app/Views/frontend/partials/nav.php'; ?>
@@ -41,5 +34,9 @@ $gaId = trim((string) ($gaId ?? ''));
 <?php include BASE_PATH . '/app/Views/frontend/partials/footer.php'; ?>
 <script src="/assets/js/lightbox.js" defer></script>
 <?php include BASE_PATH . '/app/Views/frontend/partials/image-protection.php'; ?>
+<?php include BASE_PATH . '/app/Views/frontend/partials/cookie-banner.php'; ?>
+<?php if ($gaId !== ''): ?>
+<script src="/assets/js/cookie-consent.js" defer></script>
+<?php endif; ?>
 </body>
 </html>

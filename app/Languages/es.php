@@ -16,4 +16,8 @@ return [
     'lightbox.next' => 'Siguiente',
     'protection.message' => 'Las imágenes están protegidas',
     'gallery.empty' => 'No hay categorías visibles todavía.',
+    'cookie.banner_label' => 'Aviso de cookies',
+    'cookie.message' => 'Usamos Google Analytics para analizar el uso del sitio web. ¿Aceptas las cookies analíticas?',
+    'cookie.accept' => 'Aceptar',
+    'cookie.reject' => 'Rechazar',
 ];
