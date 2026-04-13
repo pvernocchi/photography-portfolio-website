@@ -19,8 +19,6 @@ $router->get('/', [FrontendController::class, 'home']);
 $router->get('/gallery', [FrontendController::class, 'gallery']);
 $router->get('/gallery/{slug}', [FrontendController::class, 'category']);
 $router->get('/about', [FrontendController::class, 'about']);
-$router->get('/contact', [FrontendController::class, 'contact']);
-$router->post('/contact', [FrontendController::class, 'sendContact']);
 $router->get('/lang/{locale}', [FrontendController::class, 'switchLanguage']);
 $router->get('/sitemap.xml', [SitemapController::class, 'index']);
 $router->get('/theme/style.css', static function (): void {

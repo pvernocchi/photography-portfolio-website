@@ -15,7 +15,6 @@ class SitemapController extends Controller
             ['loc' => $base . '/', 'changefreq' => 'weekly', 'priority' => '1.0'],
             ['loc' => $base . '/gallery', 'changefreq' => 'weekly', 'priority' => '0.9'],
             ['loc' => $base . '/about', 'changefreq' => 'monthly', 'priority' => '0.6'],
-            ['loc' => $base . '/contact', 'changefreq' => 'monthly', 'priority' => '0.6'],
         ];
 
         foreach (Category::visible() as $category) {
