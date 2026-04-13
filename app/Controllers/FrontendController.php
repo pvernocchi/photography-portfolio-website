@@ -71,6 +71,89 @@ class FrontendController extends Controller
         ], 'frontend');
     }
 
+    public function contact(): void
+    {
+        $locale = Language::locale();
+        $siteTitle = (string) Setting::get('site_title', 'Vernocchi Photography');
+        $contactEmail = (string) Setting::get('contact_email', '');
+        $siteDescription = (string) Setting::get('site_description_' . $locale, '');
+
+        $this->render('frontend/contact', [
+            'title' => __('contact.title'),
+            'siteTitle' => $siteTitle,
+            'contactEmail' => $contactEmail,
+            'siteDescription' => $siteDescription,
+            'locale' => $locale,
+            'theme' => ThemeEngine::activeTheme(),
+            'metaDescription' => $this->metaDescription(),
+            'gaId' => (string) Setting::get('google_analytics_id', ''),
+            'csrfToken' => \App\Core\CSRF::token(),
+            'pageScripts' => ['/assets/js/contact-form.js'],
+        ], 'frontend');
+    }
+
+    public function sendContact(): void
+    {
+        // Validate CSRF token
+        if (!isset($_POST['csrf_token']) || !\App\Core\CSRF::verify((string) $_POST['csrf_token'])) {
+            http_response_code(403);
+            echo json_encode(['success' => false, 'message' => 'Invalid request']);
+            return;
+        }
+
+        // Honeypot check
+        if (!empty($_POST['website'])) {
+            http_response_code(200);
+            echo json_encode(['success' => true, 'message' => __('contact.success')]);
+            return;
+        }
+
+        $name = trim((string) ($_POST['name'] ?? ''));
+        $email = trim((string) ($_POST['email'] ?? ''));
+        $message = trim((string) ($_POST['message'] ?? ''));
+
+        // Basic validation
+        if ($name === '' || $email === '' || $message === '') {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'message' => __('contact.error')]);
+            return;
+        }
+
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'message' => __('contact.error')]);
+            return;
+        }
+
+        $contactEmail = (string) Setting::get('contact_email', '');
+        
+        if ($contactEmail === '') {
+            http_response_code(500);
+            echo json_encode(['success' => false, 'message' => __('contact.error')]);
+            return;
+        }
+
+        // Prepare email
+        $subject = 'Contact form submission from ' . $name;
+        $body = "Name: {$name}\n";
+        $body .= "Email: {$email}\n\n";
+        $body .= "Message:\n{$message}";
+        $headers = "From: {$email}\r\n";
+        $headers .= "Reply-To: {$email}\r\n";
+        $headers .= "X-Mailer: PHP/" . phpversion();
+
+        // Send email
+        $sent = mail($contactEmail, $subject, $body, $headers);
+
+        header('Content-Type: application/json');
+        if ($sent) {
+            echo json_encode(['success' => true, 'message' => __('contact.success')]);
+        } else {
+            http_response_code(500);
+            echo json_encode(['success' => false, 'message' => __('contact.error')]);
+        }
+    }
+
     public function switchLanguage(string $locale): void
     {
         Language::setLocale($locale);
