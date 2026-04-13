@@ -5,6 +5,7 @@ namespace App\Controllers;
 
 use App\Core\Auth;
 use App\Core\Controller;
+use App\Core\Session;
 use App\Models\User;
 
 class AdminController extends Controller
@@ -24,7 +25,7 @@ class AdminController extends Controller
         $this->render('admin/dashboard', [
             'title' => 'Dashboard',
             'user' => $user,
-            'success' => \App\Core\Session::flash('success'),
+            'success' => Session::flash('success'),
         ]);
     }
 }

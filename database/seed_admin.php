@@ -17,6 +17,8 @@ $pdo = new PDO($dsn, $db['user'], $db['pass'], [
 
 $username = 'admin';
 $email = 'admin@vernocchi.es';
+$defaultPassword = 'changeme';
+$password = $argv[1] ?? $defaultPassword;
 $checkStatement = $pdo->prepare('SELECT id FROM users WHERE username = :username OR email = :email LIMIT 1');
 $checkStatement->execute([
     ':username' => $username,
@@ -28,7 +30,7 @@ if ($checkStatement->fetch()) {
     exit(0);
 }
 
-$passwordHash = password_hash('changeme', PASSWORD_BCRYPT);
+$passwordHash = password_hash($password, PASSWORD_BCRYPT);
 $statement = $pdo->prepare('INSERT INTO users (username, email, password_hash, mfa_enabled) VALUES (:username, :email, :password_hash, 0)');
 $statement->execute([
     ':username' => $username,
@@ -36,5 +38,7 @@ $statement->execute([
     ':password_hash' => $passwordHash,
 ]);
 
-echo "Default admin user seeded successfully.\nUsername: admin\nPassword: changeme\n";
-echo "IMPORTANT: Change the default password immediately after first login.\n";
+echo "Default admin user seeded successfully.\nUsername: admin\nPassword: {$password}\n";
+if ($password === $defaultPassword) {
+    echo "IMPORTANT: Change the default password immediately after first login.\n";
+}

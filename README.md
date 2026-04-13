@@ -20,6 +20,7 @@ Plain PHP 8.1 MVC foundation for the Vernocchi Photography portfolio admin and p
    - `database/schema.sql`
 5. Seed default admin:
    - `php database/seed_admin.php`
+   - Optional custom password: `php database/seed_admin.php "your-strong-password"`
 6. Set Apache document root to `/public`.
 7. Ensure `/storage` and `/public/uploads` are writable.
 
