@@ -16,6 +16,8 @@ document.addEventListener('DOMContentLoaded', () => {
         thumbnailObserver.unobserve(entry.target);
         const loadThumb = thumbLoaders.get(entry.target);
         if (loadThumb) loadThumb();
+        thumbLoaders.delete(entry.target);
+        if (thumbLoaders.size === 0) thumbnailObserver.disconnect();
       });
     }, { rootMargin: '200px' })
     : null;
@@ -122,4 +124,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (delta > 60) prev();
     if (delta < -60) next();
   });
+  window.addEventListener('pagehide', () => {
+    if (thumbnailObserver) thumbnailObserver.disconnect();
+    thumbLoaders.clear();
+  }, { once: true });
 });
