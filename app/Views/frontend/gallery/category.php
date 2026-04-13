@@ -4,8 +4,7 @@
 <?php foreach ($images as $index => $image): ?>
     <article class="gallery-card image-item" data-lightbox-index="<?= (int) $index ?>" data-display-src="/image/display/<?= (int) $image['id'] ?>" data-alt="<?= e((string) (($locale === 'en' ? $image['alt_en'] : $image['alt_es']) ?: 'Photo')) ?>">
         <canvas class="protected-canvas" width="400" height="260"></canvas>
-        <img src="/image/thumb/<?= (int) $image['id'] ?>" alt="<?= e((string) (($locale === 'en' ? $image['alt_en'] : $image['alt_es']) ?: 'Photo')) ?>" draggable="false" class="source-image" loading="lazy">
-        <div class="image-overlay" aria-hidden="true"></div>
+        <img src="/image/thumb/<?= (int) $image['id'] ?>" alt="<?= e((string) (($locale === 'en' ? $image['alt_en'] : $image['alt_es']) ?: 'Photo')) ?>" draggable="false" class="gallery-source-image" loading="lazy">
     </article>
 <?php endforeach; ?>
 </section>

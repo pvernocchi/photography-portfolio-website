@@ -3,7 +3,9 @@
 document.addEventListener('DOMContentLoaded', () => {
   const categoryItems = [...document.querySelectorAll('.image-item')];
   const lightbox = document.getElementById('lightbox');
-  if (!lightbox || categoryItems.length === 0) return;
+  if (!lightbox) return;
+  lightbox.hidden = true;
+  if (categoryItems.length === 0) return;
 
   const canvas = document.getElementById('lightbox-canvas');
   const ctx = canvas.getContext('2d');
@@ -42,14 +44,54 @@ document.addEventListener('DOMContentLoaded', () => {
   const next = () => draw((current + 1) % categoryItems.length);
   const prev = () => draw((current - 1 + categoryItems.length) % categoryItems.length);
 
+  const paintThumbnail = (localCtx, canvasEl, source) => {
+    const imgWidth = source.naturalWidth;
+    const imgHeight = source.naturalHeight;
+    if (!imgWidth || !imgHeight) {
+      canvasEl.style.display = 'none';
+      return;
+    }
+
+    const canvasRatio = canvasEl.width / canvasEl.height;
+    const imageRatio = imgWidth / imgHeight;
+    let sx = 0;
+    let sy = 0;
+    let sw = imgWidth;
+    let sh = imgHeight;
+
+    if (imageRatio > canvasRatio) {
+      sw = imgHeight * canvasRatio;
+      sx = (imgWidth - sw) / 2;
+    } else {
+      sh = imgWidth / canvasRatio;
+      sy = (imgHeight - sh) / 2;
+    }
+
+    localCtx.clearRect(0, 0, canvasEl.width, canvasEl.height);
+    localCtx.drawImage(source, sx, sy, sw, sh, 0, 0, canvasEl.width, canvasEl.height);
+    canvasEl.style.display = 'block';
+  };
+
   categoryItems.forEach((item, idx) => {
     item.addEventListener('click', () => open(idx));
     const canvasEl = item.querySelector('canvas');
-    const source = item.querySelector('.source-image');
+    const source = item.querySelector('.gallery-source-image');
     if (!canvasEl || !source) return;
     const localCtx = canvasEl.getContext('2d');
-    source.addEventListener('load', () => localCtx.drawImage(source, 0, 0, canvasEl.width, canvasEl.height));
-    if (source.complete) source.dispatchEvent(new Event('load'));
+    if (!localCtx) return;
+
+    source.addEventListener('load', () => paintThumbnail(localCtx, canvasEl, source));
+    source.addEventListener('error', () => {
+      canvasEl.style.display = 'none';
+    });
+
+    if (source.complete) {
+      if (source.naturalWidth > 0) {
+        paintThumbnail(localCtx, canvasEl, source);
+      } else {
+        canvasEl.style.display = 'none';
+      }
+    }
   });
 
   lightbox.querySelector('[data-lightbox-close]').addEventListener('click', close);
