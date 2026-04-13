@@ -19,6 +19,7 @@ return [
     'contact.submit' => 'Send Message',
     'contact.success' => 'Thank you! Your message has been sent successfully.',
     'contact.error' => 'There was an error sending your message. Please try again.',
+    'contact.info_title' => 'Contact Information',
     'footer.rights' => 'All rights reserved',
     'lightbox.close' => 'Close',
     'lightbox.prev' => 'Previous',

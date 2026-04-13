@@ -56,7 +56,7 @@
         
         <div class="contact-info">
             <div class="card-front">
-                <h2><?= e($siteTitle ?? 'Contact Information') ?></h2>
+                <h2><?= e(__('contact.info_title')) ?></h2>
                 <div class="contact-details">
                     <?php if (!empty($contactEmail)): ?>
                     <p class="contact-detail">

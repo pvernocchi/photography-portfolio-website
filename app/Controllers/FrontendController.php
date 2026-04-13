@@ -125,7 +125,13 @@ class FrontendController extends Controller
             return;
         }
 
+        // Sanitize inputs to prevent email header injection
+        $name = str_replace(["\r", "\n", "%0a", "%0d"], '', $name);
+        $email = str_replace(["\r", "\n", "%0a", "%0d"], '', $email);
+        $message = str_replace(["\r\n", "\r"], "\n", $message);
+
         $contactEmail = (string) Setting::get('contact_email', '');
+        $siteTitle = (string) Setting::get('site_title', 'Photography Portfolio');
         
         if ($contactEmail === '') {
             http_response_code(500);
@@ -133,14 +139,20 @@ class FrontendController extends Controller
             return;
         }
 
-        // Prepare email
-        $subject = 'Contact form submission from ' . $name;
-        $body = "Name: {$name}\n";
+        // Prepare email with safe headers
+        $subject = 'Contact form: ' . mb_substr($name, 0, 50);
+        $body = "Contact Form Submission\n";
+        $body .= "========================\n\n";
+        $body .= "Name: {$name}\n";
         $body .= "Email: {$email}\n\n";
-        $body .= "Message:\n{$message}";
-        $headers = "From: {$email}\r\n";
+        $body .= "Message:\n{$message}\n\n";
+        $body .= "Sent from: {$siteTitle}";
+        
+        // Use site email as From, user email only in Reply-To for security
+        $headers = "From: {$siteTitle} <{$contactEmail}>\r\n";
         $headers .= "Reply-To: {$email}\r\n";
-        $headers .= "X-Mailer: PHP/" . phpversion();
+        $headers .= "X-Mailer: PHP/" . phpversion() . "\r\n";
+        $headers .= "Content-Type: text/plain; charset=UTF-8";
 
         // Send email
         $sent = mail($contactEmail, $subject, $body, $headers);

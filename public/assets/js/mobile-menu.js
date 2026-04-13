@@ -85,6 +85,5 @@
   // Initialize ARIA attributes
   menuToggle.setAttribute('aria-expanded', 'false');
   menuToggle.setAttribute('aria-controls', 'menu-links');
-  menuToggle.setAttribute('aria-label', 'Open menu');
   menuLinks.setAttribute('id', 'menu-links');
 })();

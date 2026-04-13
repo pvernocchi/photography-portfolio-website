@@ -40,7 +40,8 @@
     
     // Disable submit button and show loading state
     submitButton.disabled = true;
-    submitButton.textContent = '...';
+    submitButton.textContent = 'Sending...';
+    submitButton.setAttribute('aria-busy', 'true');
     statusDiv.hidden = true;
     
     try {
@@ -69,6 +70,7 @@
       // Re-enable submit button
       submitButton.disabled = false;
       submitButton.textContent = originalButtonText;
+      submitButton.removeAttribute('aria-busy');
     }
   });
 })();
