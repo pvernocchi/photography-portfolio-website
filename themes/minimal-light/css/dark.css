@@ -1,1 +1,4 @@
-:root{--bg:#1e1e1e;--text:#f3f3f3;--card:#2a2a2a}
+html[data-theme="dark"]{--bg:#1e1e1e;--text:#f3f3f3;--card:#2a2a2a}
+html[data-theme="dark"] .front-nav{background:rgba(26,26,26,.92);border-color:#333}
+html[data-theme="dark"] .nav-dropdown-menu{background:#2a2a2a;border-color:#444}
+html[data-theme="dark"] .menu-links{background:#2a2a2a;border-color:#444}

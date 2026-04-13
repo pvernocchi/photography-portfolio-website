@@ -26,13 +26,15 @@ $gaId = trim((string) ($gaId ?? ''));
     <link rel="canonical" href="<?= e($canonical) ?>">
     <link rel="stylesheet" href="/assets/css/frontend.css">
     <link rel="stylesheet" href="/theme/style.css">
-    <link rel="stylesheet" href="/theme/dark.css" media="(prefers-color-scheme: dark)">
+    <link rel="stylesheet" href="/theme/dark.css">
+    <script>try{document.documentElement.setAttribute('data-theme',localStorage.getItem('theme')==='dark'?'dark':'light');}catch(e){document.documentElement.setAttribute('data-theme','light');}</script>
 </head>
 <body>
 <?php include BASE_PATH . '/app/Views/frontend/partials/nav.php'; ?>
 <main class="front-main"><?= $content ?></main>
 <?php include BASE_PATH . '/app/Views/frontend/partials/footer.php'; ?>
 <script src="/assets/js/lightbox.js" defer></script>
+<script src="/assets/js/theme-toggle.js" defer></script>
 <?php include BASE_PATH . '/app/Views/frontend/partials/image-protection.php'; ?>
 <?php include BASE_PATH . '/app/Views/frontend/partials/cookie-banner.php'; ?>
 <?php if ($gaId !== ''): ?>
