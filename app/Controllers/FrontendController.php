@@ -140,7 +140,9 @@ class FrontendController extends Controller
         }
 
         // Prepare email with safe headers
-        $subject = 'Contact form: ' . mb_substr($name, 0, 50);
+        // Additional sanitization for subject line to prevent injection
+        $safeName = mb_substr($name, 0, 50);
+        $subject = str_replace(["\r", "\n"], '', 'Contact form: ' . $safeName);
         $body = "Contact Form Submission\n";
         $body .= "========================\n\n";
         $body .= "Name: {$name}\n";
