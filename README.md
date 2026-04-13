@@ -1,13 +1,13 @@
-# vernocchi.es — Phase 1 Foundation
+# vernocchi.es — Photography Portfolio Application
 
-Plain PHP 8.1 MVC foundation for the Vernocchi Photography portfolio admin and public placeholder pages.
+Plain PHP 8.1 MVC application for a bilingual photography portfolio with secure admin, MFA, image protection, category/image management, themes, settings, and FTP deployment.
 
 ## Requirements
 
 - PHP 8.1+
 - MySQL 8+
 - PDO MySQL extension
-- GD extension (for later image phases)
+- GD extension
 - Apache with `mod_rewrite`
 
 ## Installation
@@ -16,11 +16,9 @@ Plain PHP 8.1 MVC foundation for the Vernocchi Photography portfolio admin and p
 2. Copy config file:
    - `cp config/config.example.php config/config.php`
 3. Update database credentials in `config/config.php`.
-4. Import schema:
-   - `database/schema.sql`
+4. Import `database/schema.sql`.
 5. Seed default admin:
    - `php database/seed_admin.php`
-   - Optional custom password: `php database/seed_admin.php "your-strong-password"`
 6. Set Apache document root to `/public`.
 7. Ensure `/storage` and `/public/uploads` are writable.
 
@@ -29,50 +27,51 @@ Plain PHP 8.1 MVC foundation for the Vernocchi Photography portfolio admin and p
 - Username: `admin`
 - Password: `changeme`
 
-On first login you are forced to set up MFA with Microsoft Authenticator.
-Change the default password immediately after first login in production environments.
+Change the default password immediately after first login.
 
-## MFA Setup Flow
+## Manual FTP Deployment
 
-1. Log in at `/admin/login`.
-2. Scan the QR code shown at `/admin/mfa/setup` with Microsoft Authenticator.
-3. Enter a valid 6-digit TOTP code.
-4. MFA is enabled and you are redirected to `/admin/dashboard`.
+1. Connect to Namecheap FTP with credentials.
+2. Upload all files maintaining directory structure.
+3. Set document root to `public/` folder.
+4. Copy `config/config.example.php` to `config/config.php` and edit.
+5. Import `database/schema.sql` via phpMyAdmin.
+6. Ensure `storage/` directories are writable (chmod 755).
+7. Navigate to your domain, log in with `admin` / `changeme`.
+8. Set up MFA, change password.
 
-> Note: Phase 1 uses Google Charts URL rendering for the QR code, which sends the provisioning URI to Google to generate the image. This is kept intentionally to match the specified implementation.
+## GitHub Actions Auto-Deploy
 
-## Directory Structure
+1. In your GitHub repo, go to **Settings → Secrets and variables → Actions**.
+2. Add these repository secrets:
+   - `FTP_HOST` — Namecheap FTP hostname
+   - `FTP_USER` — FTP username
+   - `FTP_PASS` — FTP password
+   - `FTP_REMOTE_DIR` — remote directory path (e.g., `/public_html/`)
+3. Push to `main` branch to auto-deploy.
 
-```text
-vernocchi.es/
-├── public/
-│   ├── index.php
-│   ├── .htaccess
-│   ├── assets/
-│   │   ├── css/admin.css
-│   │   ├── js/admin.js
-│   │   └── images/
-│   └── uploads/
-├── app/
-│   ├── bootstrap.php
-│   ├── Core/
-│   ├── Controllers/
-│   ├── Models/
-│   └── Views/
-├── config/
-│   ├── config.example.php
-│   └── config.php (ignored)
-├── database/
-│   ├── schema.sql
-│   └── seed_admin.php
-└── storage/
-    ├── logs/
-    └── originals/
-```
+Workflow file: `.github/workflows/deploy.yml`
 
-## Notes for Namecheap / FTP Deployment
+## First-Time Setup Checklist
 
-- Keep app code outside web root; only `/public` should be the document root.
-- Upload with FTP preserving directory structure.
-- `config/config.php` stays server-local and is gitignored.
-- No Composer dependencies are required.
+- [ ] Upload files via FTP or push to trigger GitHub Actions
+- [ ] Create MySQL database via Namecheap cPanel
+- [ ] Import `database/schema.sql`
+- [ ] Configure `config/config.php`
+- [ ] Set document root to `public/`
+- [ ] Verify storage directories are writable
+- [ ] Log in as admin, change password
+- [ ] Set up MFA with Microsoft Authenticator
+- [ ] Configure site settings (title, theme, analytics, etc.)
+- [ ] Create your first category
+- [ ] Upload your first photos
+
+## Notes
+
+- Admin is English-only.
+- Public frontend supports Spanish and English.
+- Images are served via PHP (`/image/thumb/{id}`, `/image/display/{id}`), never direct storage links.
+- Storage structure:
+  - `storage/originals/{category_id}/`
+  - `storage/thumbnails/{category_id}/`
+  - `storage/display/{category_id}/`

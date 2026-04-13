@@ -1,0 +1,2 @@
+.gallery-card{box-shadow:none;transition:transform .2s,opacity .2s}.gallery-card:hover{transform:scale(1.01);opacity:.94}
+@media (prefers-color-scheme: dark){:root{--bg:#1e1e1e;--text:#f3f3f3;--card:#2a2a2a}.front-nav{background:rgba(26,26,26,.92);border-color:#333}}

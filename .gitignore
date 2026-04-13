@@ -1,6 +1,10 @@
 config/config.php
 storage/originals/*
 !storage/originals/.gitkeep
+storage/thumbnails/*
+!storage/thumbnails/.gitkeep
+storage/display/*
+!storage/display/.gitkeep
 public/uploads/*
 !public/uploads/.gitkeep
 *.log

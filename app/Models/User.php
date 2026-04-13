@@ -37,4 +37,14 @@ class User
             ':id' => $id,
         ]);
     }
+
+    public static function updatePassword(int $id, string $passwordHash): bool
+    {
+        $sql = 'UPDATE users SET password_hash = :password_hash WHERE id = :id';
+        $statement = Database::instance()->pdo()->prepare($sql);
+        return $statement->execute([
+            ':password_hash' => $passwordHash,
+            ':id' => $id,
+        ]);
+    }
 }

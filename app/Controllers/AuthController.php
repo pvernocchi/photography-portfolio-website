@@ -155,6 +155,56 @@ class AuthController extends Controller
         $this->redirect('/admin/login');
     }
 
+    public function showChangePassword(): void
+    {
+        $userId = Auth::currentUserId();
+        if ($userId === null || !Auth::isMfaVerified()) {
+            $this->redirect('/admin/login');
+        }
+
+        $this->render('admin/settings/password', [
+            'title' => 'Change Password',
+            'success' => Session::flash('success'),
+            'error' => Session::flash('error'),
+        ]);
+    }
+
+    public function changePassword(): void
+    {
+        if (!CSRF::validate($_POST['csrf_token'] ?? null)) {
+            Session::flash('error', 'Invalid security token.');
+            $this->redirect('/admin/settings/password');
+        }
+
+        $userId = Auth::currentUserId();
+        if ($userId === null || !Auth::isMfaVerified()) {
+            $this->redirect('/admin/login');
+        }
+
+        $user = User::findById($userId);
+        if ($user === null) {
+            $this->redirect('/admin/login');
+        }
+
+        $currentPassword = (string) ($_POST['current_password'] ?? '');
+        $newPassword = (string) ($_POST['new_password'] ?? '');
+        $confirmPassword = (string) ($_POST['new_password_confirmation'] ?? '');
+
+        if (!password_verify($currentPassword, (string) $user['password_hash'])) {
+            Session::flash('error', 'Current password is incorrect.');
+            $this->redirect('/admin/settings/password');
+        }
+
+        if (strlen($newPassword) < 12 || !hash_equals($newPassword, $confirmPassword)) {
+            Session::flash('error', 'New password must be at least 12 characters and match confirmation.');
+            $this->redirect('/admin/settings/password');
+        }
+
+        User::updatePassword($userId, password_hash($newPassword, PASSWORD_BCRYPT));
+        Session::flash('success', 'Password updated successfully.');
+        $this->redirect('/admin/settings/password');
+    }
+
     private function pendingUserOrRedirect(): array
     {
         $userId = Auth::pendingMfaUserId();
