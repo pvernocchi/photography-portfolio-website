@@ -3,10 +3,8 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
-use App\Core\CSRF;
 use App\Core\Controller;
 use App\Core\Language;
-use App\Core\Session;
 use App\Core\ThemeEngine;
 use App\Models\Category;
 use App\Models\Image;
@@ -71,55 +69,6 @@ class FrontendController extends Controller
             'metaDescription' => $this->metaDescription(),
             'gaId' => (string) Setting::get('google_analytics_id', ''),
         ], 'frontend');
-    }
-
-    public function contact(): void
-    {
-        $this->render('frontend/contact', [
-            'title' => __('contact.title'),
-            'locale' => Language::locale(),
-            'theme' => ThemeEngine::activeTheme(),
-            'success' => Session::flash('success'),
-            'error' => Session::flash('error'),
-            'metaDescription' => $this->metaDescription(),
-            'gaId' => (string) Setting::get('google_analytics_id', ''),
-        ], 'frontend');
-    }
-
-    public function sendContact(): void
-    {
-        if (!CSRF::validate($_POST['csrf_token'] ?? null)) {
-            Session::flash('error', __('contact.error'));
-            $this->redirect('/contact');
-        }
-
-        if (trim((string) ($_POST['company'] ?? '')) !== '') {
-            Session::flash('success', __('contact.success'));
-            $this->redirect('/contact');
-        }
-
-        $name = trim((string) ($_POST['name'] ?? ''));
-        $email = trim((string) ($_POST['email'] ?? ''));
-        $subject = trim((string) ($_POST['subject'] ?? ''));
-        $message = trim((string) ($_POST['message'] ?? ''));
-
-        if ($name === '' || !filter_var($email, FILTER_VALIDATE_EMAIL) || $subject === '' || $message === '') {
-            Session::flash('error', __('contact.error'));
-            $this->redirect('/contact');
-        }
-
-        $recipient = (string) Setting::get('contact_email', 'admin@vernocchi.es');
-        $headers = [
-            'From: ' . $recipient,
-            'Reply-To: ' . $email,
-            'Content-Type: text/plain; charset=UTF-8',
-        ];
-
-        $body = "Name: {$name}\nEmail: {$email}\n\n{$message}";
-        $ok = mail($recipient, $subject, $body, implode("\r\n", $headers));
-
-        Session::flash($ok ? 'success' : 'error', $ok ? __('contact.success') : __('contact.error'));
-        $this->redirect('/contact');
     }
 
     public function switchLanguage(string $locale): void
