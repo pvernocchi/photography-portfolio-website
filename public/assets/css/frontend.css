@@ -226,7 +226,8 @@ a:focus-visible {
 
 .menu-links {
   display: flex;
-  gap: var(--space-6);
+  flex-wrap: wrap;
+  gap: var(--space-4) var(--space-6);
   align-items: center;
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);
@@ -1121,6 +1122,7 @@ html[data-theme="dark"] .gallery-card:hover {
     padding: var(--space-4);
     display: none;
     flex-direction: column;
+    flex-wrap: nowrap;
     gap: var(--space-2);
     box-shadow: var(--shadow-2xl);
     max-height: calc(100vh - 73px);
@@ -1204,5 +1206,20 @@ html[data-theme="dark"] .gallery-card:hover {
     font-size: var(--font-size-xl);
     width: 40px;
     height: 40px;
+  }
+}
+
+/* ============================================
+   REDUCED MOTION (Windows accessibility, etc.)
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
