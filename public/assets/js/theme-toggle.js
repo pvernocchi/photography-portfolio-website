@@ -11,10 +11,12 @@
             btn.textContent = '🌙';
             btn.setAttribute('aria-label', 'Switch to dark mode');
         }
-        localStorage.setItem('theme', theme);
+        try { localStorage.setItem('theme', theme); } catch (e) {}
     }
 
-    applyTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light');
+    var stored;
+    try { stored = localStorage.getItem('theme'); } catch (e) { stored = null; }
+    applyTheme(stored === 'dark' ? 'dark' : 'light');
 
     btn.addEventListener('click', function () {
         applyTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');

@@ -27,7 +27,7 @@ $gaId = trim((string) ($gaId ?? ''));
     <link rel="stylesheet" href="/assets/css/frontend.css">
     <link rel="stylesheet" href="/theme/style.css">
     <link rel="stylesheet" href="/theme/dark.css">
-    <script>document.documentElement.setAttribute('data-theme',localStorage.getItem('theme')==='dark'?'dark':'light');</script>
+    <script>try{document.documentElement.setAttribute('data-theme',localStorage.getItem('theme')==='dark'?'dark':'light');}catch(e){document.documentElement.setAttribute('data-theme','light');}</script>
 </head>
 <body>
 <?php include BASE_PATH . '/app/Views/frontend/partials/nav.php'; ?>
