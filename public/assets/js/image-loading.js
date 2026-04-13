@@ -52,6 +52,11 @@
     if (!('IntersectionObserver' in window)) {
       return;
     }
+
+    // Respect OS-level reduced-motion preference (e.g. Windows accessibility settings)
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      return;
+    }
     
     const cards = document.querySelectorAll('.gallery-card');
     
@@ -67,11 +72,17 @@
           entry.target.style.opacity = '0';
           entry.target.style.transform = 'translateY(20px)';
           
-          // Trigger animation
+          // Use double requestAnimationFrame to ensure the browser has
+          // painted the initial state before starting the transition.
+          // A single rAF can be batched with the initial style change on
+          // desktop browsers (Edge/Chrome on Windows), causing the
+          // transition to be skipped entirely.
           requestAnimationFrame(() => {
-            entry.target.style.transition = 'opacity 0.6s ease-out, transform 0.6s ease-out';
-            entry.target.style.opacity = '1';
-            entry.target.style.transform = 'translateY(0)';
+            requestAnimationFrame(() => {
+              entry.target.style.transition = 'opacity 0.6s ease-out, transform 0.6s ease-out';
+              entry.target.style.opacity = '1';
+              entry.target.style.transform = 'translateY(0)';
+            });
           });
           
           observer.unobserve(entry.target);
