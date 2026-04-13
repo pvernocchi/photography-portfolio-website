@@ -10,7 +10,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const counter = lightbox.querySelector('[data-lightbox-counter]');
   let current = 0;
   let touchStartX = 0;
-  const observers = [];
   lightbox.hidden = true;
 
   const paintThumbnail = (localCtx, canvasEl, source) => {
@@ -95,7 +94,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }, { rootMargin: '200px' });
       observer.observe(item);
-      observers.push(observer);
     } else {
       loadThumb();
     }
@@ -118,5 +116,4 @@ document.addEventListener('DOMContentLoaded', () => {
     if (delta > 60) prev();
     if (delta < -60) next();
   });
-  window.addEventListener('beforeunload', () => { observers.forEach((observer) => observer.disconnect()); });
 });
