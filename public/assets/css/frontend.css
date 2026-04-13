@@ -897,9 +897,20 @@ html[data-theme="dark"] .contact-status.error {
   color: var(--color-accent);
 }
 
-.nav-dropdown:hover .nav-dropdown-menu {
+.nav-dropdown:hover .nav-dropdown-menu,
+.nav-dropdown.is-open .nav-dropdown-menu {
   display: block;
   animation: slideDown var(--transition-fast);
+}
+
+/* Bridge the gap between toggle and dropdown so hover isn't lost */
+.nav-dropdown-menu::before {
+  content: '';
+  position: absolute;
+  top: calc(-1 * var(--space-2));
+  left: 0;
+  right: 0;
+  height: var(--space-2);
 }
 
 @keyframes slideDown {
@@ -1149,6 +1160,14 @@ html[data-theme="dark"] .gallery-card:hover {
     padding: var(--space-3);
   }
   
+  .nav-dropdown:hover .nav-dropdown-menu {
+    display: none;
+  }
+
+  .nav-dropdown.is-open .nav-dropdown-menu {
+    display: block;
+  }
+
   .nav-dropdown-menu {
     position: static;
     box-shadow: none;
@@ -1156,6 +1175,10 @@ html[data-theme="dark"] .gallery-card:hover {
     padding-left: var(--space-6);
     background: transparent;
     margin-top: var(--space-2);
+  }
+
+  .nav-dropdown-menu::before {
+    display: none;
   }
   
   .nav-dropdown-menu a {

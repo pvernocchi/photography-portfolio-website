@@ -57,12 +57,28 @@
   });
   
   /**
+   * Toggle gallery dropdown on mobile via click/tap
+   */
+  const dropdownToggle = menuLinks.querySelector('.nav-dropdown-toggle');
+  const dropdown = menuLinks.querySelector('.nav-dropdown');
+  if (dropdownToggle && dropdown) {
+    dropdownToggle.addEventListener('click', (e) => {
+      if (window.innerWidth <= 780) {
+        e.preventDefault();
+        e.stopPropagation();
+        dropdown.classList.toggle('is-open');
+      }
+    });
+  }
+
+  /**
    * Close menu when selecting a menu item
    */
   const menuItems = menuLinks.querySelectorAll('a');
   menuItems.forEach(item => {
     item.addEventListener('click', () => {
       if (isOpen) {
+        if (dropdown) dropdown.classList.remove('is-open');
         toggleMenu(true);
       }
     });
@@ -76,6 +92,7 @@
     clearTimeout(resizeTimeout);
     resizeTimeout = setTimeout(() => {
       if (window.innerWidth > 780 && isOpen) {
+        if (dropdown) dropdown.classList.remove('is-open');
         toggleMenu(true);
         document.body.style.overflow = '';
       }
