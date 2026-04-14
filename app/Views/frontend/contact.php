@@ -6,7 +6,7 @@
     </header>
 
     <div class="contact-container">
-        <form class="contact-form" method="post" action="/contact/send" id="contact-form">
+        <form class="contact-form" method="post" action="/contact/send" id="contact-form" data-captcha-message="<?= e(__('contact.captcha_error')) ?>">
             <input type="hidden" name="csrf_token" value="<?= e($csrfToken) ?>">
             
             <!-- Honeypot field for spam protection -->
@@ -46,6 +46,12 @@
                     required
                 ></textarea>
             </div>
+
+            <?php if (!empty($turnstileSiteKey)): ?>
+            <div class="form-group">
+                <div class="cf-turnstile" data-sitekey="<?= e($turnstileSiteKey) ?>"></div>
+            </div>
+            <?php endif; ?>
             
             <div class="form-actions">
                 <button type="submit" class="btn-front btn-primary">
@@ -77,3 +83,7 @@
     
     <div id="contact-status" class="contact-status" hidden></div>
 </div>
+
+<?php if (!empty($turnstileSiteKey)): ?>
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+<?php endif; ?>

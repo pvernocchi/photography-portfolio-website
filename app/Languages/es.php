@@ -19,6 +19,7 @@ return [
     'contact.submit' => 'Enviar mensaje',
     'contact.success' => '¡Gracias! Tu mensaje ha sido enviado exitosamente.',
     'contact.error' => 'Hubo un error al enviar tu mensaje. Por favor, inténtalo de nuevo.',
+    'contact.captcha_error' => 'Completa el CAPTCHA e inténtalo de nuevo.',
     'contact.info_title' => 'Información de contacto',
     'footer.rights' => 'Todos los derechos reservados',
     'lightbox.close' => 'Cerrar',

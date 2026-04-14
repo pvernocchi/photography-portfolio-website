@@ -7,6 +7,7 @@
 (function () {
   const form = document.getElementById('contact-form');
   const statusDiv = document.getElementById('contact-status');
+  const captchaWidget = form ? form.querySelector('.cf-turnstile') : null;
   
   if (!form || !statusDiv) return;
   
@@ -46,6 +47,10 @@
     
     try {
       const formData = new FormData(form);
+      if (captchaWidget && !formData.get('cf-turnstile-response')) {
+        showStatus(form.dataset.captchaMessage || 'Please verify that you are human.', false);
+        return;
+      }
       
       const response = await fetch('/contact/send', {
         method: 'POST',
@@ -67,6 +72,10 @@
       showStatus('An error occurred. Please try again.', false);
       console.error('Contact form error:', error);
     } finally {
+      if (captchaWidget && window.turnstile && typeof window.turnstile.reset === 'function') {
+        window.turnstile.reset();
+      }
+
       // Re-enable submit button
       submitButton.disabled = false;
       submitButton.textContent = originalButtonText;

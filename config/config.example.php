@@ -26,4 +26,8 @@ return [
         'period' => 30,
         'algorithm' => 'sha1',
     ],
+    'turnstile' => [
+        'site_key' => '',
+        'secret_key' => '',
+    ],
 ];
