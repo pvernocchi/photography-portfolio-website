@@ -205,6 +205,10 @@ $s = static fn (string $key, string $default = ''): string => (string) ($setting
                     <option value="tls" <?= $s('smtp_encryption', 'tls') === 'tls' ? 'selected' : '' ?>>tls</option>
                 </select>
             </label>
+            <label class="checkbox-row">
+                <input type="checkbox" name="smtp_logging_enabled" value="1" <?= $s('smtp_logging_enabled', '1') === '1' ? 'checked' : '' ?>>
+                Enable SMTP debug logging
+            </label>
             <label>Username
                 <input name="smtp_username" value="<?= e($s('smtp_username')) ?>">
             </label>
