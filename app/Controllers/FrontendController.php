@@ -5,6 +5,7 @@ namespace App\Controllers;
 
 use App\Core\Controller;
 use App\Core\Language;
+use App\Core\Mailer;
 use App\Core\ThemeEngine;
 use App\Models\Category;
 use App\Models\Image;
@@ -163,14 +164,12 @@ class FrontendController extends Controller
         $body .= "Message:\n{$message}\n\n";
         $body .= "Sent from: {$siteTitle}";
         
-        // Use site email as From, user email only in Reply-To for security
-        $headers = "From: {$siteTitle} <{$contactEmail}>\r\n";
-        $headers .= "Reply-To: {$email}\r\n";
-        $headers .= "X-Mailer: PHP/" . phpversion() . "\r\n";
-        $headers .= "Content-Type: text/plain; charset=UTF-8";
-
-        // Send email
-        $sent = mail($contactEmail, $subject, $body, $headers);
+        $sent = Mailer::send(
+            $contactEmail,
+            $subject,
+            $body,
+            $email
+        );
 
         header('Content-Type: application/json');
         if ($sent) {

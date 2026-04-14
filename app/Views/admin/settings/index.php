@@ -16,11 +16,13 @@ $s = static fn (string $key, string $default = ''): string => (string) ($setting
 
 <div class="tabs">
     <button class="tab-btn active" data-tab="general">General</button>
+    <button class="tab-btn" data-tab="security">Security</button>
     <button class="tab-btn" data-tab="theme">Theme</button>
     <button class="tab-btn" data-tab="about">About</button>
     <button class="tab-btn" data-tab="watermark">Watermark</button>
     <button class="tab-btn" data-tab="analytics">Analytics</button>
     <button class="tab-btn" data-tab="seo">SEO</button>
+    <button class="tab-btn" data-tab="contact">Contact</button>
 </div>
 
 <section class="tab-panel active" data-panel="general">
@@ -38,17 +40,24 @@ $s = static fn (string $key, string $default = ''): string => (string) ($setting
         <label>Contact email
             <input name="contact_email" value="<?= e($s('contact_email')) ?>">
         </label>
-        <label>Turnstile site key
-            <input name="turnstile_site_key" value="<?= e($s('turnstile_site_key')) ?>">
-        </label>
-        <label>Turnstile secret key
-            <input name="turnstile_secret_key" type="password" value="<?= e($s('turnstile_secret_key')) ?>" autocomplete="off">
-        </label>
         <label>Description (ES)
             <textarea name="site_description_es"><?= e($s('site_description_es')) ?></textarea>
         </label>
         <label>Description (EN)
             <textarea name="site_description_en"><?= e($s('site_description_en')) ?></textarea>
+        </label>
+        <button class="btn btn-primary">Save</button>
+    </form>
+</section>
+
+<section class="tab-panel" data-panel="security">
+    <form class="card form-stack" method="post" action="/admin/settings/security">
+        <?= CSRF::field() ?>
+        <label>Turnstile site key
+            <input name="turnstile_site_key" value="<?= e($s('turnstile_site_key')) ?>">
+        </label>
+        <label>Turnstile secret key
+            <input name="turnstile_secret_key" type="password" value="<?= e($s('turnstile_secret_key')) ?>" autocomplete="off">
         </label>
         <button class="btn btn-primary">Save</button>
     </form>
@@ -142,6 +151,41 @@ $s = static fn (string $key, string $default = ''): string => (string) ($setting
         </label>
         <label>OG image path
             <input name="og_image" value="<?= e($s('og_image')) ?>">
+        </label>
+        <button class="btn btn-primary">Save</button>
+    </form>
+</section>
+
+<section class="tab-panel" data-panel="contact">
+    <form class="card form-stack" method="post" action="/admin/settings/contact">
+        <?= CSRF::field() ?>
+        <label>SMTP Host
+            <input name="smtp_host" value="<?= e($s('smtp_host')) ?>">
+        </label>
+        <label>SMTP Port
+            <input name="smtp_port" type="number" min="1" value="<?= e($s('smtp_port', '587')) ?>">
+        </label>
+        <label>Encryption
+            <select name="smtp_encryption">
+                <option value="none" <?= $s('smtp_encryption', 'tls') === 'none' ? 'selected' : '' ?>>none</option>
+                <option value="ssl" <?= $s('smtp_encryption') === 'ssl' ? 'selected' : '' ?>>ssl</option>
+                <option value="tls" <?= $s('smtp_encryption', 'tls') === 'tls' ? 'selected' : '' ?>>tls</option>
+            </select>
+        </label>
+        <label>Username
+            <input name="smtp_username" value="<?= e($s('smtp_username')) ?>">
+        </label>
+        <label>Password
+            <input name="smtp_password" type="password" autocomplete="off">
+            <?php if ($s('smtp_password') !== ''): ?>
+                <small class="muted">Leave blank to keep existing password.</small>
+            <?php endif; ?>
+        </label>
+        <label>From name
+            <input name="smtp_from_name" value="<?= e($s('smtp_from_name')) ?>">
+        </label>
+        <label>From email
+            <input name="smtp_from_email" value="<?= e($s('smtp_from_email')) ?>">
         </label>
         <button class="btn btn-primary">Save</button>
     </form>

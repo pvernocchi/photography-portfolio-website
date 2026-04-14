@@ -67,11 +67,13 @@ $router->group('/admin', [], static function (Router $router): void {
 
         $router->get('/settings', [SettingsController::class, 'index']);
         $router->post('/settings/general', [SettingsController::class, 'updateGeneral']);
+        $router->post('/settings/security', [SettingsController::class, 'updateSecurity']);
         $router->post('/settings/theme', [SettingsController::class, 'updateTheme']);
         $router->post('/settings/about', [SettingsController::class, 'updateAbout']);
         $router->post('/settings/watermark', [SettingsController::class, 'updateWatermark']);
         $router->post('/settings/analytics', [SettingsController::class, 'updateAnalytics']);
         $router->post('/settings/seo', [SettingsController::class, 'updateSeo']);
+        $router->post('/settings/contact', [SettingsController::class, 'updateContact']);
 
         $router->get('/settings/password', [AuthController::class, 'showChangePassword']);
         $router->post('/settings/password', [AuthController::class, 'changePassword']);
