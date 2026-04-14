@@ -12,6 +12,14 @@ use App\Core\CSRF;
 </header>
 <?php if (!empty($success)): ?><div class="alert alert-success"><?= e($success) ?></div><?php endif; ?>
 <?php if (!empty($error)): ?><div class="alert alert-error"><?= e($error) ?></div><?php endif; ?>
+<nav class="tabs">
+    <a class="tab-btn" href="/admin/images">All images</a>
+    <a class="tab-btn" href="/admin/images/unassigned">Without category assigned</a>
+    <?php foreach ($categories as $cat): ?>
+        <?php if ((int) ($cat['images_count'] ?? 0) < 1 && (int) $cat['id'] !== (int) $category['id']) { continue; } ?>
+        <a class="tab-btn <?= (int) $cat['id'] === (int) $category['id'] ? 'active' : '' ?>" href="/admin/categories/<?= (int) $cat['id'] ?>/images"><?= e($cat['name_en']) ?></a>
+    <?php endforeach; ?>
+</nav>
 <div class="image-grid" id="image-sortable" data-bulk-grid="true">
     <?php foreach ($images as $image): ?>
     <article class="card image-card sortable-item" draggable="true" data-id="<?= (int) $image['id'] ?>">
@@ -39,6 +47,15 @@ use App\Core\CSRF;
         <input type="hidden" name="category_id" value="<?= (int) $category['id'] ?>">
         <div id="bulk-ids"></div>
         <div class="bulk-bar-actions">
+            <?php if (!empty($categories)): ?>
+            <select name="assign_category_id" class="bulk-bar-select" aria-label="Select gallery to assign images to">
+                <option value="">Assign to gallery</option>
+                <?php foreach ($categories as $cat): ?>
+                <option value="<?= (int) $cat['id'] ?>"><?= e($cat['name_en']) ?></option>
+                <?php endforeach; ?>
+            </select>
+            <?php endif; ?>
+            <button type="submit" name="action" value="assign_to_category" class="btn bulk-bar-btn bulk-bar-btn-outline">Assign to gallery</button>
             <button type="submit" name="action" value="remove_from_category" class="btn bulk-bar-btn bulk-bar-btn-outline">Remove from gallery</button>
             <button type="submit" name="action" value="delete" class="btn btn-danger bulk-bar-btn">Remove and delete from storage</button>
         </div>

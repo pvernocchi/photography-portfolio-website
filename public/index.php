@@ -57,6 +57,7 @@ $router->group('/admin', [], static function (Router $router): void {
         $router->post('/categories/reorder', [CategoryController::class, 'reorder']);
 
         $router->get('/images', [ImageController::class, 'library']);
+        $router->get('/images/unassigned', [ImageController::class, 'unassigned']);
         $router->get('/images/upload', [ImageController::class, 'showUpload']);
         $router->post('/images/upload', [ImageController::class, 'upload']);
         $router->post('/images/import-ftp', [ImageController::class, 'importFromFtp']);
