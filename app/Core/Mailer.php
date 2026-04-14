@@ -9,7 +9,7 @@ class Mailer
 {
     private const SOCKET_TIMEOUT = 10;
     private const SMTP_LINE_BUFFER = 515; // 512 + CRLF + continuation safety
-    private const DEFAULT_SMTP_DEBUG_LOG = '/storage/logs/smtp-debug.log';
+    private const DEFAULT_SMTP_DEBUG_LOG = 'storage/logs/smtp-debug.log';
 
     public static function send(string $to, string $subject, string $body, string $replyTo = ''): bool
     {
@@ -347,13 +347,13 @@ class Mailer
 
     private static function smtpDebugLogPath(): string
     {
-        $configured = trim((string) app_config('mail.smtp_debug_log', ''));
+        $configured = trim(app_config('mail.smtp_debug_log', ''));
         if ($configured !== '') {
             return $configured;
         }
 
         if (defined('BASE_PATH')) {
-            return BASE_PATH . self::DEFAULT_SMTP_DEBUG_LOG;
+            return BASE_PATH . '/' . self::DEFAULT_SMTP_DEBUG_LOG;
         }
 
         return '';
