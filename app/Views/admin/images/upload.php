@@ -59,7 +59,7 @@ use App\Core\CSRF;
             div.className = 'upload-thumb';
             const img = document.createElement('img');
             img.src = URL.createObjectURL(file);
-            img.onload = () => URL.revokeObjectURL(img.src);
+            img.onload = img.onerror = () => URL.revokeObjectURL(img.src);
             const span = document.createElement('span');
             span.textContent = file.name;
             div.appendChild(img);

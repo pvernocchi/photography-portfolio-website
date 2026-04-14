@@ -91,19 +91,30 @@ class Image
         $pdo->prepare('DELETE FROM image_category WHERE image_id = :image_id')
             ->execute([':image_id' => $imageId]);
 
+        if ($categoryIds === []) {
+            return;
+        }
+
+        $placeholders = implode(',', array_fill(0, count($categoryIds), '?'));
+        $sortStmt = $pdo->prepare(
+            'SELECT category_id, COALESCE(MAX(sort_order), 0) + 1 AS next_sort
+             FROM image_category WHERE category_id IN (' . $placeholders . ') GROUP BY category_id'
+        );
+        $sortStmt->execute(array_map('intval', $categoryIds));
+        $sortMap = [];
+        foreach ($sortStmt->fetchAll() as $row) {
+            $sortMap[(int) $row['category_id']] = (int) $row['next_sort'];
+        }
+
         $sql = 'INSERT INTO image_category (image_id, category_id, sort_order)
                 VALUES (:image_id, :category_id, :sort_order)';
         $statement = $pdo->prepare($sql);
 
         foreach ($categoryIds as $categoryId) {
-            $maxSort = $pdo->prepare('SELECT COALESCE(MAX(sort_order), 0) + 1 FROM image_category WHERE category_id = :cid');
-            $maxSort->execute([':cid' => (int) $categoryId]);
-            $nextSort = (int) $maxSort->fetchColumn();
-
             $statement->execute([
                 ':image_id' => $imageId,
                 ':category_id' => (int) $categoryId,
-                ':sort_order' => $nextSort,
+                ':sort_order' => $sortMap[(int) $categoryId] ?? 0,
             ]);
         }
     }
