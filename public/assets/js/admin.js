@@ -78,7 +78,8 @@ window.AdminBulkSelect = {
         e.preventDefault();
         return;
       }
-      const action = (e.submitter || form.querySelector('[name="action"]'))?.value || '';
+      // e.submitter is supported in all modern browsers; fall back to data attribute set on click.
+      const action = e.submitter?.value || form.dataset.pendingAction || '';
       if (action === 'delete') {
         if (!confirm('Permanently delete ' + checked.length + ' image(s)? This cannot be undone.')) {
           e.preventDefault();
@@ -88,6 +89,11 @@ window.AdminBulkSelect = {
           e.preventDefault();
         }
       }
+    });
+
+    // Track which submit button was clicked as a reliable fallback for e.submitter.
+    form.querySelectorAll('[type="submit"]').forEach((btn) => {
+      btn.addEventListener('click', () => { form.dataset.pendingAction = btn.value; });
     });
   }
 };

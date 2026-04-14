@@ -75,6 +75,7 @@ class Image
         if ($ids === []) {
             return [];
         }
+        $ids = array_slice($ids, 0, 500);
         $placeholders = implode(',', array_fill(0, count($ids), '?'));
         $statement = Database::instance()->pdo()->prepare("SELECT * FROM images WHERE id IN ($placeholders)");
         $statement->execute(array_map('intval', $ids));
@@ -87,6 +88,7 @@ class Image
         if ($ids === []) {
             return;
         }
+        $ids = array_slice($ids, 0, 500);
         $placeholders = implode(',', array_fill(0, count($ids), '?'));
         Database::instance()->pdo()
             ->prepare("DELETE FROM images WHERE id IN ($placeholders)")
@@ -99,6 +101,7 @@ class Image
         if ($imageIds === []) {
             return;
         }
+        $imageIds = array_slice($imageIds, 0, 500);
         $placeholders = implode(',', array_fill(0, count($imageIds), '?'));
         $params = array_merge([$categoryId], array_map('intval', $imageIds));
         Database::instance()->pdo()

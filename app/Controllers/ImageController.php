@@ -228,8 +228,13 @@ class ImageController extends Controller
         $ids = array_values(array_filter(array_map('intval', $rawIds), static fn(int $id) => $id > 0));
         $returnTo = (string) ($_POST['return_to'] ?? '/admin/images');
 
-        // Restrict return_to to safe admin paths only.
-        if (!preg_match('#^/admin/[a-z0-9/_-]*$#', $returnTo)) {
+        // Allow only known safe admin return paths (no traversal, no query strings).
+        $allowedPaths = ['/admin/images'];
+        $categoryId = (int) ($_POST['category_id'] ?? 0);
+        if ($categoryId > 0) {
+            $allowedPaths[] = '/admin/categories/' . $categoryId . '/images';
+        }
+        if (!in_array($returnTo, $allowedPaths, true)) {
             $returnTo = '/admin/images';
         }
 
