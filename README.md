@@ -169,6 +169,10 @@ vernocchi.es/
 │   │   ├── css/
 │   │   │   ├── admin.css           # Admin panel styles
 │   │   │   └── frontend.css        # Frontend styles
+│   │   ├── img/
+│   │   │   └── flags/
+│   │   │       ├── es.svg          # Spanish flag (language switcher)
+│   │   │       └── gb.svg          # British flag (language switcher)
 │   │   └── js/
 │   │       ├── admin.js            # Admin panel functionality
 │   │       ├── contact-form.js     # Contact form + Turnstile validation
