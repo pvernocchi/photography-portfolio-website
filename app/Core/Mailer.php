@@ -9,6 +9,7 @@ class Mailer
 {
     private const SOCKET_TIMEOUT = 10;
     private const SMTP_LINE_BUFFER = 515; // 512 + CRLF + continuation safety
+    private const DEFAULT_SMTP_DEBUG_LOG = '/storage/logs/smtp-debug.log';
 
     public static function send(string $to, string $subject, string $body, string $replyTo = ''): bool
     {
@@ -100,18 +101,30 @@ class Mailer
         string $body,
         string $replyTo
     ): bool {
+        self::debugLog(sprintf(
+            'SMTP send start: host=%s port=%d encryption=%s from=%s to=%s',
+            $host !== '' ? $host : '(empty)',
+            $port,
+            $encryption !== '' ? $encryption : 'none',
+            $fromEmail !== '' ? $fromEmail : '(empty)',
+            $to !== '' ? $to : '(empty)'
+        ));
+
         if ($host === '') {
             error_log('Mailer: SMTP host is not configured.');
+            self::debugLog('SMTP configuration error: host is empty.');
             return false;
         }
 
         if ($fromEmail === '') {
             error_log('Mailer: SMTP from email address is not configured.');
+            self::debugLog('SMTP configuration error: from email is empty.');
             return false;
         }
 
         if ($username === '' || $password === '') {
             error_log('Mailer: SMTP host configured but username/password are missing.');
+            self::debugLog('SMTP configuration error: username or password is missing.');
             return false;
         }
 
@@ -126,6 +139,7 @@ class Mailer
 
         if (!is_resource($socket)) {
             error_log(sprintf('Mailer: failed to connect to SMTP server (%s:%d): %s (%d)', $host, $port, $errstr, $errno));
+            self::debugLog(sprintf('SMTP connection failed: %s:%d (%s - %d)', $host, $port, $errstr, $errno));
             return false;
         }
 
@@ -155,6 +169,7 @@ class Mailer
             $tlsEnabled = @stream_socket_enable_crypto($socket, true, STREAM_CRYPTO_METHOD_TLS_CLIENT);
             if ($tlsEnabled !== true) {
                 error_log('Mailer: failed to enable STARTTLS.');
+                self::debugLog('SMTP STARTTLS failed.');
                 fclose($socket);
                 return false;
             }
@@ -170,12 +185,12 @@ class Mailer
             return false;
         }
 
-        if (!self::sendCommand($socket, base64_encode($username), [334])) {
+        if (!self::sendCommand($socket, base64_encode($username), [334], 'AUTH USERNAME (redacted)', false)) {
             fclose($socket);
             return false;
         }
 
-        if (!self::sendCommand($socket, base64_encode($password), [235])) {
+        if (!self::sendCommand($socket, base64_encode($password), [235], 'AUTH PASSWORD (redacted)', false)) {
             fclose($socket);
             return false;
         }
@@ -215,6 +230,7 @@ class Mailer
         $written = fwrite($socket, $payload);
         if ($written === false || $written !== strlen($payload)) {
             error_log('Mailer: failed to write message body to SMTP socket.');
+            self::debugLog('SMTP DATA write failed.');
             fclose($socket);
             return false;
         }
@@ -225,6 +241,7 @@ class Mailer
         }
 
         self::sendCommand($socket, 'QUIT', [221]);
+        self::debugLog('SMTP send completed successfully.');
         fclose($socket);
         return true;
     }
@@ -232,10 +249,20 @@ class Mailer
     /**
      * @param resource $socket
      */
-    private static function sendCommand($socket, string $command, array $expectedCodes): bool
+    private static function sendCommand(
+        $socket,
+        string $command,
+        array $expectedCodes,
+        string $logContext = '',
+        bool $logCommand = true
+    ): bool
     {
+        $label = $logContext !== '' ? $logContext : $command;
+        $logOutput = $logCommand ? self::sanitizeLogValue($label) : $label;
+        self::debugLog('SMTP C: ' . $logOutput);
+
         fwrite($socket, $command . "\r\n");
-        return self::expectCode($socket, $expectedCodes, $command);
+        return self::expectCode($socket, $expectedCodes, $label);
     }
 
     /**
@@ -246,12 +273,21 @@ class Mailer
         $response = self::readResponse($socket);
         if ($response === '') {
             error_log('Mailer: empty SMTP response' . ($context !== '' ? ' after ' . $context : '') . '.');
+            self::debugLog('SMTP S: (empty response)' . ($context !== '' ? ' after ' . $context : ''));
             return false;
         }
+
+        self::debugLog('SMTP S: ' . self::sanitizeLogValue($response));
 
         $code = (int) substr($response, 0, 3);
         if (!in_array($code, $expectedCodes, true)) {
             error_log(sprintf('Mailer: SMTP command failed%s. Response: %s', $context !== '' ? ' (' . $context . ')' : '', trim($response)));
+            self::debugLog(sprintf(
+                'SMTP unexpected response%s: expected=%s got=%d',
+                $context !== '' ? ' after ' . $context : '',
+                implode(',', $expectedCodes),
+                $code
+            ));
             return false;
         }
 
@@ -288,5 +324,44 @@ class Mailer
         }
 
         return str_replace("\n", "\r\n", $dotStuffed);
+    }
+
+    private static function debugLog(string $message): void
+    {
+        $logPath = self::smtpDebugLogPath();
+        if ($logPath === '') {
+            return;
+        }
+
+        $logDir = dirname($logPath);
+        if (!is_dir($logDir)) {
+            @mkdir($logDir, 0755, true);
+        }
+
+        @file_put_contents(
+            $logPath,
+            sprintf("[%s] %s\n", date('c'), $message),
+            FILE_APPEND | LOCK_EX
+        );
+    }
+
+    private static function smtpDebugLogPath(): string
+    {
+        $configured = trim((string) app_config('mail.smtp_debug_log', ''));
+        if ($configured !== '') {
+            return $configured;
+        }
+
+        if (defined('BASE_PATH')) {
+            return BASE_PATH . self::DEFAULT_SMTP_DEBUG_LOG;
+        }
+
+        return '';
+    }
+
+    private static function sanitizeLogValue(string $value): string
+    {
+        $singleLine = str_replace(["\r\n", "\r", "\n"], ' | ', trim($value));
+        return preg_replace('/\s+/', ' ', $singleLine) ?? $singleLine;
     }
 }

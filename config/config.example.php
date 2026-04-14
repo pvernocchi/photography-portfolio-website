@@ -31,4 +31,8 @@ return [
         'site_key' => '',
         'secret_key' => '',
     ],
+    'mail' => [
+        // SMTP debug logs are written here. Leave empty to use storage/logs/smtp-debug.log
+        'smtp_debug_log' => '',
+    ],
 ];
