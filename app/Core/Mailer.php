@@ -211,8 +211,9 @@ class Mailer
         }
 
         $message = implode("\r\n", $headers) . "\r\n\r\n" . self::prepareBody($body) . "\r\n.";
-        $written = fwrite($socket, $message . "\r\n");
-        if ($written === false) {
+        $payload = $message . "\r\n";
+        $written = fwrite($socket, $payload);
+        if ($written === false || $written !== strlen($payload)) {
             error_log('Mailer: failed to write message body to SMTP socket.');
             fclose($socket);
             return false;
