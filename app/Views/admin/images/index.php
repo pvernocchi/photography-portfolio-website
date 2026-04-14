@@ -11,7 +11,7 @@ use App\Core\CSRF;
 <div class="image-grid" id="image-sortable">
     <?php foreach ($images as $image): ?>
     <article class="card image-card sortable-item" draggable="true" data-id="<?= (int) $image['id'] ?>">
-        <img src="/image/thumb/<?= (int) $image['id'] ?>" alt="thumb" loading="lazy">
+        <img src="/image/thumb/<?= (int) $image['id'] ?>" alt="thumb">
         <div class="actions">
             <button type="button" class="btn-link" data-cover="<?= (int) $image['id'] ?>" data-category="<?= (int) $category['id'] ?>">Set cover</button>
             <a href="/admin/images/<?= (int) $image['id'] ?>/edit">Edit</a>
