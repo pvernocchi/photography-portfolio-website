@@ -11,6 +11,13 @@ A bilingual (Spanish/English) photography portfolio web application built with *
 - Drag-and-drop reordering of photos within categories
 - Flat category system with name (ES/EN), slug, and cover image
 
+### 📧 Contact & Mail
+- Contact form with honeypot + Cloudflare Turnstile spam protection
+- Configurable mail driver: PHP `mail()` or SMTP
+- Full SMTP support with AUTH LOGIN, TLS/SSL encryption
+- SMTP credentials encrypted at rest via AES-256-GCM
+- Customizable sender name and email address
+
 ### 🔒 Aggressive Image Protection
 - Images served through PHP — no direct file URLs ever exposed
 - Canvas rendering prevents "Save Image As" browser option
@@ -31,6 +38,7 @@ A bilingual (Spanish/English) photography portfolio web application built with *
 - CSRF protection on all forms
 - All database queries use PDO prepared statements
 - Password change with 12-character minimum
+- AES-256-GCM encryption for sensitive settings (e.g. SMTP passwords)
 
 ### 🎨 Theme System
 Three selectable themes, switchable from the admin panel:
@@ -50,19 +58,21 @@ All themes support automatic dark/light mode via `prefers-color-scheme` CSS medi
 - Translation files: `app/Languages/es.php`, `app/Languages/en.php`
 
 ### ⚙️ Admin Settings (Tabbed Interface)
-- **General**: Site title, descriptions (ES/EN), default language, contact email, Turnstile site/secret keys
+- **General**: Site title, descriptions (ES/EN), default language, contact email
+- **Security**: Cloudflare Turnstile site/secret keys
 - **Theme**: Visual theme selector with preview
 - **About**: Rich text editor for About page content (ES/EN), profile photo upload
 - **Watermark**: Enable/disable, text, position, opacity, font size
 - **Analytics**: Google Analytics GA4 integration with GDPR cookie consent banner
 - **SEO**: Meta titles/descriptions (ES/EN), Open Graph image, Twitter cards, XML sitemap
+- **Contact**: Mail driver selection (PHP mail / SMTP), SMTP host, port, encryption, credentials, sender name/email
 
 ### 📄 Public Pages
 - **Homepage**: Welcome hero + featured categories
 - **Gallery**: Category grid → image grid within category
 - **Lightbox**: Full-screen image viewer with ← → keyboard/swipe navigation, image counter
 - **About**: Photographer bio page (editable from admin)
-- **Contact**: Contact form with honeypot + Cloudflare Turnstile spam protection, sends via PHP `mail()`
+- **Contact**: Contact form with honeypot + Cloudflare Turnstile spam protection, sends via configurable mail driver (PHP `mail()` or SMTP)
 - **Sitemap**: Dynamic XML sitemap at `/sitemap.xml`
 
 ---
@@ -73,8 +83,9 @@ All themes support automatic dark/light mode via `prefers-color-scheme` CSS medi
 - MySQL 8+
 - Apache with `mod_rewrite` enabled
 - GD extension (for image processing)
+- OpenSSL extension (for AES-256-GCM encryption)
 - PDO MySQL extension
-- PHP `mail()` function (for contact form — available on Namecheap)
+- PHP `mail()` function or external SMTP server (for contact form)
 
 ---
 
@@ -92,8 +103,10 @@ vernocchi.es/
 │   │   ├── Controller.php          # Base controller class
 │   │   ├── CSRF.php                # CSRF token management
 │   │   ├── Database.php            # PDO MySQL singleton wrapper
+│   │   ├── Encryption.php          # AES-256-GCM encryption/decryption
 │   │   ├── ImageProcessor.php      # GD-based image processing + watermark
 │   │   ├── Language.php            # Multilingual system
+│   │   ├── Mailer.php              # Mail driver (PHP mail + SMTP)
 │   │   ├── Router.php              # Custom router with middleware
 │   │   ├── Session.php             # Session management + remember-me
 │   │   ├── ThemeEngine.php         # Theme loading and resolution
@@ -147,6 +160,7 @@ vernocchi.es/
 │   ├── schema.sql                  # Full database schema (all tables + seed data)
 │   ├── migration_phase2.sql        # Categories + images tables
 │   ├── migration_phase4.sql        # Settings table + default values
+│   ├── migration_smtp.sql          # SMTP/contact mail settings
 │   └── seed_admin.php              # Create default admin user
 ├── public/                         # ← Apache document root
 │   ├── .htaccess                   # URL rewriting to index.php
@@ -213,6 +227,7 @@ return [
         'url' => 'https://vernocchi.es',
         'debug' => false,
         'default_language' => 'es',
+        'key' => '', // Set a random 32-character string for encryption
     ],
     'database' => [
         'host' => 'localhost',
@@ -233,8 +248,8 @@ return [
         'algorithm' => 'sha1',
     ],
     'turnstile' => [
-        'site_key' => 'your_turnstile_site_key',
-        'secret_key' => 'your_turnstile_secret_key',
+        'site_key' => '',
+        'secret_key' => '',
     ],
 ];
 ```
@@ -248,6 +263,8 @@ mysql -u your_user -p your_database < database/schema.sql
 ```
 
 This creates all tables (`users`, `remember_tokens`, `sessions`, `categories`, `images`, `settings`) and seeds default settings.
+
+> **Existing installations:** If upgrading, run `database/migration_smtp.sql` to add SMTP/contact mail settings.
 
 ### 4. Seed Admin Account
 
@@ -323,7 +340,7 @@ The repository includes a workflow (`.github/workflows/deploy.yml`) that automat
 | `sessions` | Optional DB-backed sessions |
 | `categories` | Photography categories (bilingual names, slug, cover image, sort order, visibility) |
 | `images` | Photo metadata (filename, bilingual titles/alt text, dimensions, file size, sort order) |
-| `settings` | Key-value settings store (site title, theme, watermark config, analytics, SEO, etc.) |
+| `settings` | Key-value settings store (site title, theme, watermark config, analytics, SEO, mail driver, SMTP credentials, etc.) |
 
 ---
 
@@ -367,7 +384,14 @@ The repository includes a workflow (`.github/workflows/deploy.yml`) that automat
 | GET/POST | `/admin/images/{id}/edit` `/admin/images/{id}/update` | Edit image metadata |
 | POST | `/admin/images/{id}/delete` | Delete image |
 | GET | `/admin/settings` | Settings (tabbed) |
-| POST | `/admin/settings/{group}` | Update settings group |
+| POST | `/admin/settings/general` | Update general settings |
+| POST | `/admin/settings/security` | Update security settings (Turnstile) |
+| POST | `/admin/settings/theme` | Update theme settings |
+| POST | `/admin/settings/about` | Update about page settings |
+| POST | `/admin/settings/watermark` | Update watermark settings |
+| POST | `/admin/settings/analytics` | Update analytics settings |
+| POST | `/admin/settings/seo` | Update SEO settings |
+| POST | `/admin/settings/contact` | Update contact/mail settings |
 | GET/POST | `/admin/settings/password` | Change password |
 
 ---
@@ -395,6 +419,8 @@ storage/
 - **All vanilla JavaScript** — no jQuery, no frontend frameworks
 - **Theme CSS** is served dynamically based on the active theme setting
 - **Image processing** uses PHP's built-in GD library
+- **AES-256-GCM encryption** for sensitive settings via `app/Core/Encryption.php`
+- **Dual mail driver** — contact form sends via PHP `mail()` or SMTP (configurable in admin)
 
 ---
 
@@ -404,6 +430,7 @@ storage/
 - [ ] Create MySQL database via Namecheap cPanel
 - [ ] Import `database/schema.sql`
 - [ ] Configure `config/config.php` with database credentials
+- [ ] Set a random 32-character `app.key` in `config/config.php` (used for encryption)
 - [ ] Set Apache document root to `public/`
 - [ ] Verify `storage/` directories are writable (`chmod 755`)
 - [ ] Run `php database/seed_admin.php`
@@ -411,6 +438,7 @@ storage/
 - [ ] Set up MFA with Microsoft Authenticator
 - [ ] Change default password in Settings → Password
 - [ ] Configure site settings (title, theme, contact email, analytics)
+- [ ] Configure mail settings (PHP mail or SMTP) in Settings → Contact
 - [ ] Create your first photography category
 - [ ] Upload your first photos
 - [ ] Configure watermark settings (optional)
