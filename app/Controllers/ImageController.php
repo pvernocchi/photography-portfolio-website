@@ -20,6 +20,7 @@ class ImageController extends Controller
             'images' => Image::all(),
             'categories' => $categories,
             'activeFilter' => 'all',
+            'returnTo' => '/admin/images',
             'success' => Session::flash('success'),
             'error' => Session::flash('error'),
         ]);
@@ -33,6 +34,7 @@ class ImageController extends Controller
             'images' => Image::unassigned(),
             'categories' => $categories,
             'activeFilter' => 'unassigned',
+            'returnTo' => '/admin/images/unassigned',
             'success' => Session::flash('success'),
             'error' => Session::flash('error'),
         ]);
@@ -327,7 +329,7 @@ class ImageController extends Controller
         $allowedPaths = ['/admin/images'];
         $allowedPaths[] = '/admin/images/unassigned';
         $categoryId = (int) ($_POST['category_id'] ?? 0);
-        $assignCategoryId = (int) (($_POST['assign_category_id'] ?? $_POST['category_id']) ?? 0);
+        $assignCategoryId = (int) ($_POST['assign_category_id'] ?? $_POST['category_id'] ?? 0);
         if ($categoryId > 0) {
             $allowedPaths[] = '/admin/categories/' . $categoryId . '/images';
         }

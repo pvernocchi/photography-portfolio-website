@@ -46,7 +46,7 @@ use App\Core\CSRF;
     <span class="bulk-bar-count" id="bulk-count"></span>
     <form method="post" action="/admin/images/bulk-action" id="bulk-form">
         <?= CSRF::field() ?>
-        <input type="hidden" name="return_to" value="<?= ($activeFilter ?? 'all') === 'unassigned' ? '/admin/images/unassigned' : '/admin/images' ?>">
+        <input type="hidden" name="return_to" value="<?= e((string) ($returnTo ?? '/admin/images')) ?>">
         <div class="bulk-bar-actions">
             <?php if (!empty($categories)): ?>
             <select name="category_id" class="bulk-bar-select" aria-label="Select gallery to remove images from">

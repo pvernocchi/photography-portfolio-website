@@ -175,7 +175,10 @@ class Image
             return 0;
         }
 
-        $imageIds = array_values(array_unique(array_filter(array_map('intval', $imageIds), static fn (int $id) => $id > 0)));
+        $validIds = array_map('intval', $imageIds);
+        $validIds = array_filter($validIds, static fn (int $id) => $id > 0);
+        $uniqueIds = array_unique($validIds);
+        $imageIds = array_values($uniqueIds);
         if ($imageIds === []) {
             return 0;
         }
