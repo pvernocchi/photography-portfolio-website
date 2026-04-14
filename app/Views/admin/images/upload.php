@@ -52,24 +52,23 @@ use App\Core\CSRF;
         preview.innerHTML = '';
         const files = input.files;
         if (!files || files.length === 0) return;
-        for (const file of files) {
-            if (!file.type.startsWith('image/')) {
-                continue;
+        const imageFiles = Array.from(files).filter((file) => file.type.startsWith('image/'));
+        const thumbnails = await Promise.all(imageFiles.map((file) => createThumbnailDataUrl(file)));
+
+        thumbnails.forEach((thumbnailSrc, index) => {
+            if (!thumbnailSrc) {
+                return;
             }
             const div = document.createElement('div');
             div.className = 'upload-thumb';
             const img = document.createElement('img');
-            const thumbnailSrc = await createThumbnailDataUrl(file);
-            if (!thumbnailSrc) {
-                continue;
-            }
             img.src = thumbnailSrc;
             const span = document.createElement('span');
-            span.textContent = file.name;
+            span.textContent = imageFiles[index].name;
             div.appendChild(img);
             div.appendChild(span);
             preview.appendChild(div);
-        }
+        });
     }
 
     function createThumbnailDataUrl(file) {
@@ -91,7 +90,7 @@ use App\Core\CSRF;
                     ctx.drawImage(source, 0, 0, thumbWidth, thumbHeight);
                     resolve(canvas.toDataURL('image/jpeg', 0.8));
                 } else {
-                    resolve(objectUrl);
+                    resolve('');
                 }
                 URL.revokeObjectURL(objectUrl);
             };
