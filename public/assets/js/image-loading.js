@@ -2,48 +2,10 @@
 
 /**
  * Image Loading Enhancement
- * Adds loading states and fade-in effects for lazy-loaded images
+ * Adds fade-in effects for gallery cards on scroll
  */
 (function () {
-  /**
-   * Mark image as loaded with fade-in effect
-   */
-  function handleImageLoad(img) {
-    img.classList.add('loaded');
-    const card = img.closest('.gallery-card');
-    if (card) {
-      card.classList.remove('is-loading');
-    }
-  }
-  
-  /**
-   * Setup loading state for images
-   */
-  function setupImageLoading() {
-    const lazyImages = document.querySelectorAll('img[loading="lazy"]');
-    
-    lazyImages.forEach(img => {
-      const card = img.closest('.gallery-card');
-      
-      // Add loading state to card
-      if (card && !img.complete) {
-        card.classList.add('is-loading');
-      }
-      
-      // Handle load event
-      if (img.complete && img.naturalHeight > 0) {
-        handleImageLoad(img);
-      } else {
-        img.addEventListener('load', () => handleImageLoad(img), { once: true });
-        img.addEventListener('error', () => {
-          if (card) {
-            card.classList.remove('is-loading');
-          }
-        }, { once: true });
-      }
-    });
-  }
-  
+
   /**
    * Intersection Observer for fade-in animation on scroll
    */
@@ -98,11 +60,9 @@
   // Initialize on DOM ready
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
-      setupImageLoading();
       setupScrollAnimations();
     });
   } else {
-    setupImageLoading();
     setupScrollAnimations();
   }
 })();

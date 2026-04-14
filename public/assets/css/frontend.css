@@ -495,14 +495,6 @@ html[data-theme="dark"] .gallery-card.is-loading::before {
   }
 }
 
-.gallery-card img[loading="lazy"] {
-  opacity: 0;
-  transition: opacity var(--transition-base);
-}
-
-.gallery-card img[loading="lazy"].loaded {
-  opacity: 1;
-}
 /* ============================================
    PROTECTED GALLERY (Canvas-based images)
    ============================================ */
