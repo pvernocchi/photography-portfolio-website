@@ -54,7 +54,7 @@ All themes support automatic dark/light mode via `prefers-color-scheme` CSS medi
 - **Theme**: Visual theme selector with preview
 - **About**: Rich text editor for About page content (ES/EN), profile photo upload
 - **Watermark**: Enable/disable, text, position, opacity, font size
-- **Analytics**: Google Analytics GA4 integration
+- **Analytics**: Google Analytics GA4 integration with GDPR cookie consent banner
 - **SEO**: Meta titles/descriptions (ES/EN), Open Graph image, Twitter cards, XML sitemap
 
 ### 📄 Public Pages
@@ -122,7 +122,9 @@ vernocchi.es/
 │       │   ├── categories/         # Category list, create, edit views
 │       │   ├── dashboard.php       # Dashboard with stats
 │       │   ├── images/             # Image list, upload, edit views
-│       │   └── settings/           # Tabbed settings interface
+│       │   └── settings/
+│       │       ├── index.php       # Tabbed settings interface
+│       │       └── password.php    # Password change form
 │       ├── auth/
 │       │   ├── login.php           # Login form
 │       │   ├── mfa_setup.php       # MFA QR code setup
@@ -133,7 +135,7 @@ vernocchi.es/
 │       │   ├── gallery/            # Gallery index + category views
 │       │   ├── home.php            # Homepage
 │       │   ├── layouts/            # Frontend layout template
-│       │   └── partials/           # Nav, footer, lightbox, image protection
+│       │   └── partials/           # Nav, footer, lightbox, image protection, cookie banner
 │       ├── home/                   # Legacy home view
 │       └── layouts/
 │           ├── admin.php           # Admin layout
@@ -150,8 +152,17 @@ vernocchi.es/
 │   ├── .htaccess                   # URL rewriting to index.php
 │   ├── index.php                   # Front controller (all routes)
 │   ├── assets/
-│   │   ├── css/                    # Admin styles
-│   │   └── js/                     # Admin + frontend scripts
+│   │   ├── css/
+│   │   │   ├── admin.css           # Admin panel styles
+│   │   │   └── frontend.css        # Frontend styles
+│   │   └── js/
+│   │       ├── admin.js            # Admin panel functionality
+│   │       ├── contact-form.js     # Contact form + Turnstile validation
+│   │       ├── cookie-consent.js   # GA4 cookie consent banner
+│   │       ├── image-loading.js    # Lazy loading for images
+│   │       ├── lightbox.js         # Lightbox viewer
+│   │       ├── mobile-menu.js      # Mobile navigation menu
+│   │       └── theme-toggle.js     # Dark/light mode toggle
 │   └── uploads/                    # (placeholder directory)
 ├── storage/                        # ⚠️ OUTSIDE public root
 │   ├── originals/{category_id}/    # Full-size originals (never served)
@@ -160,13 +171,19 @@ vernocchi.es/
 ├── themes/
 │   ├── minimal-light/
 │   │   ├── theme.json
-│   │   └── css/style.css
+│   │   └── css/
+│   │       ├── style.css
+│   │       └── dark.css
 │   ├── dark-room/
 │   │   ├── theme.json
-│   │   └── css/style.css
+│   │   └── css/
+│   │       ├── style.css
+│   │       └── dark.css
 │   └── editorial/
 │       ├── theme.json
-│       └── css/style.css
+│       └── css/
+│           ├── style.css
+│           └── dark.css
 ├── .gitignore
 └── README.md
 ```
@@ -321,7 +338,7 @@ The repository includes a workflow (`.github/workflows/deploy.yml`) that automat
 | GET | `/gallery/{slug}` | Images in a category |
 | GET | `/about` | About the photographer |
 | GET | `/contact` | Contact form |
-| POST | `/contact` | Send contact message |
+| POST | `/contact/send` | Send contact message |
 | GET | `/lang/{locale}` | Switch language (es/en) |
 | GET | `/sitemap.xml` | XML sitemap |
 | GET | `/image/thumb/{id}` | Serve thumbnail (protected) |
