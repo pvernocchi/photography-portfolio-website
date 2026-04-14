@@ -353,6 +353,10 @@ class Mailer
         );
     }
 
+    /**
+     * Returns whether SMTP debug logging is enabled from settings.
+     * Defaults to enabled when the setting is not present.
+     */
     private static function isSmtpDebugLoggingEnabled(): bool
     {
         return trim((string) Setting::get('smtp_logging_enabled', '1')) === '1';
