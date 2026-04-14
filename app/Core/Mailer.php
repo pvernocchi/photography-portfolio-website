@@ -326,6 +326,10 @@ class Mailer
         return str_replace("\n", "\r\n", $dotStuffed);
     }
 
+    /**
+     * Writes a timestamped SMTP debug message to the configured log file.
+     * This method is fail-safe and silently returns when logging is disabled or file operations fail.
+     */
     private static function debugLog(string $message): void
     {
         $logPath = self::smtpDebugLogPath();
@@ -345,6 +349,11 @@ class Mailer
         );
     }
 
+    /**
+     * Resolves the SMTP debug log path from configuration.
+     * Returns the configured path when set, otherwise falls back to BASE_PATH/storage/logs/smtp-debug.log.
+     * Returns an empty string when no path can be resolved.
+     */
     private static function smtpDebugLogPath(): string
     {
         $configured = trim(app_config('mail.smtp_debug_log', ''));
@@ -359,6 +368,10 @@ class Mailer
         return '';
     }
 
+    /**
+     * Normalizes SMTP command/response strings for single-line log output.
+     * Converts line breaks to separators and collapses repeated whitespace.
+     */
     private static function sanitizeLogValue(string $value): string
     {
         $singleLine = str_replace(["\r\n", "\r", "\n"], ' | ', trim($value));
