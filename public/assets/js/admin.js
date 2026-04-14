@@ -89,7 +89,14 @@ window.AdminBulkSelect = {
           e.preventDefault();
         }
       } else if (action === 'remove_from_category') {
-        if (!confirm('Remove ' + plural(checked.length, 'image') + ' from this gallery?')) {
+        const categoryInput = form.querySelector('[name="category_id"]');
+        const hasCategory = categoryInput && Number(categoryInput.value) > 0;
+        if (!hasCategory) {
+          e.preventDefault();
+          alert('Please select a gallery first.');
+          return;
+        }
+        if (!confirm('Remove ' + plural(checked.length, 'image') + ' from the selected gallery?')) {
           e.preventDefault();
         }
       }

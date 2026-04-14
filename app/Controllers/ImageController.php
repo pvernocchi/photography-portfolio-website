@@ -110,6 +110,85 @@ class ImageController extends Controller
         $this->redirect('/admin/images/assign');
     }
 
+    public function importFromFtp(): void
+    {
+        if (!CSRF::validate($_POST['csrf_token'] ?? null)) {
+            Session::flash('error', 'Invalid security token.');
+            $this->redirect('/admin/images/upload');
+        }
+
+        $categoryIds = array_map('intval', (array) ($_POST['categories'] ?? []));
+        $ftpDir = BASE_PATH . '/public/uploads';
+        if (!is_dir($ftpDir)) {
+            Session::flash('error', 'FTP import folder not found: public/uploads');
+            $this->redirect('/admin/images/upload');
+        }
+
+        $batchLimit = 100;
+        $files = $this->findFtpJpegFiles($ftpDir, $batchLimit + 1);
+        if ($files === []) {
+            Session::flash('error', 'No JPG files found in public/uploads.');
+            $this->redirect('/admin/images/upload');
+        }
+
+        $remaining = max(0, count($files) - $batchLimit);
+        $files = array_slice($files, 0, $batchLimit);
+
+        $uploadedIds = [];
+        $skipped = 0;
+
+        foreach ($files as $path) {
+            $originalName = basename($path);
+            $safeName = preg_replace('/[^a-z0-9\-]/', '-', strtolower(pathinfo($originalName, PATHINFO_FILENAME))) ?: 'image';
+            $filename = $safeName . '-' . bin2hex(random_bytes(6)) . '.jpg';
+
+            try {
+                $meta = ImageProcessor::processUpload($path, $filename);
+                $imageId = Image::create([
+                    'filename' => $filename,
+                    'original_filename' => $originalName,
+                    'width' => $meta['width'],
+                    'height' => $meta['height'],
+                    'file_size' => $meta['file_size'],
+                ]);
+
+                if ($imageId > 0 && $categoryIds !== []) {
+                    Image::assignCategories($imageId, $categoryIds);
+                }
+
+                if ($imageId > 0) {
+                    $uploadedIds[] = $imageId;
+                    @unlink($path);
+                } else {
+                    $skipped++;
+                }
+            } catch (\Throwable) {
+                $skipped++;
+                continue;
+            }
+        }
+
+        if ($uploadedIds === []) {
+            $message = 'No FTP images were imported.';
+            if ($skipped > 0) {
+                $message .= ' ' . $skipped . ' file(s) skipped.';
+            }
+            Session::flash('error', $message);
+            $this->redirect('/admin/images/upload');
+        }
+
+        Session::put('last_uploaded_ids', $uploadedIds);
+        $success = count($uploadedIds) . ' image(s) imported from FTP.';
+        if ($remaining > 0) {
+            $success .= ' ' . $remaining . ' file(s) still pending in public/uploads (run import again).';
+        }
+        if ($skipped > 0) {
+            $success .= ' ' . $skipped . ' file(s) skipped.';
+        }
+        Session::flash('success', $success);
+        $this->redirect('/admin/images/assign');
+    }
+
     public function showAssign(): void
     {
         $uploadedIds = Session::get('last_uploaded_ids', []);
@@ -306,5 +385,34 @@ class ImageController extends Controller
 
         Category::update($categoryId, array_merge($category, ['cover_image_id' => $imageId]));
         echo json_encode(['ok' => true]);
+    }
+
+    /** @return string[] */
+    private function findFtpJpegFiles(string $baseDir, int $limit): array
+    {
+        $files = [];
+        $iterator = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($baseDir, \FilesystemIterator::SKIP_DOTS)
+        );
+
+        foreach ($iterator as $item) {
+            if (count($files) >= $limit) {
+                break;
+            }
+            if (!$item->isFile()) {
+                continue;
+            }
+            $ext = strtolower((string) pathinfo($item->getFilename(), PATHINFO_EXTENSION));
+            if ($ext !== 'jpg' && $ext !== 'jpeg') {
+                continue;
+            }
+            $path = $item->getPathname();
+            if (!is_readable($path)) {
+                continue;
+            }
+            $files[] = $path;
+        }
+
+        return $files;
     }
 }

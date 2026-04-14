@@ -13,6 +13,7 @@ $appName = (string) app_config('app.name', 'Vernocchi Photography');
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><?= e($title ?? $appName) ?> · <?= e($appName) ?></title>
     <meta name="csrf-token" content="<?= e(CSRF::token()) ?>">
+    <link rel="icon" type="image/svg+xml" href="https://www.vernocchi.es/Shutter-Icon-2.svg">
     <link rel="stylesheet" href="/assets/css/admin.css">
 </head>
 <body>

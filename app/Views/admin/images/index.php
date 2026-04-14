@@ -40,7 +40,7 @@ use App\Core\CSRF;
         <div id="bulk-ids"></div>
         <div class="bulk-bar-actions">
             <button type="submit" name="action" value="remove_from_category" class="btn bulk-bar-btn bulk-bar-btn-outline">Remove from gallery</button>
-            <button type="submit" name="action" value="delete" class="btn btn-danger bulk-bar-btn">Delete permanently</button>
+            <button type="submit" name="action" value="delete" class="btn btn-danger bulk-bar-btn">Remove and delete from storage</button>
         </div>
     </form>
 </div>

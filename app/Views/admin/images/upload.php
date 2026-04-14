@@ -27,6 +27,28 @@ use App\Core\CSRF;
     </fieldset>
     <button class="btn btn-primary" type="submit">Upload</button>
 </form>
+
+<form method="post" action="/admin/images/import-ftp" class="card form-stack mt-24">
+    <?= CSRF::field() ?>
+    <h2>Import JPGs uploaded via FTP</h2>
+    <p class="muted">Upload JPG files to <code>public/uploads</code> via FTP, then run this import (processed in batches of 100 files).</p>
+    <fieldset>
+        <legend>Assign to galleries on import (optional)</legend>
+        <div class="gallery-checkboxes">
+            <?php foreach ($categories as $cat): ?>
+            <label class="checkbox-row">
+                <input type="checkbox" name="categories[]" value="<?= (int) $cat['id'] ?>">
+                <?= e($cat['name_en']) ?>
+            </label>
+            <?php endforeach; ?>
+            <?php if (empty($categories)): ?>
+            <p class="muted">No galleries yet. <a href="/admin/categories/create">Create one</a></p>
+            <?php endif; ?>
+        </div>
+    </fieldset>
+    <button class="btn" type="submit">Import from FTP folder</button>
+</form>
+
 <script>
 (function() {
     const zone = document.getElementById('upload-zone');
@@ -48,24 +70,62 @@ use App\Core\CSRF;
 
     input.addEventListener('change', showPreviews);
 
-    function showPreviews() {
+    async function showPreviews() {
         preview.innerHTML = '';
         const files = input.files;
         if (!files || files.length === 0) return;
-        for (let i = 0; i < files.length; i++) {
-            const file = files[i];
-            if (!file.type.startsWith('image/')) continue;
+        const imageFiles = Array.from(files).filter((file) => file.type.startsWith('image/'));
+        const thumbnails = await Promise.all(imageFiles.map((file) => createThumbnailDataUrl(file)));
+
+        thumbnails.forEach((thumbnailSrc, index) => {
+            if (!thumbnailSrc) {
+                return;
+            }
             const div = document.createElement('div');
             div.className = 'upload-thumb';
             const img = document.createElement('img');
-            img.src = URL.createObjectURL(file);
-            img.onload = img.onerror = () => URL.revokeObjectURL(img.src);
+            img.src = thumbnailSrc;
             const span = document.createElement('span');
-            span.textContent = file.name;
+            span.textContent = imageFiles[index].name;
             div.appendChild(img);
             div.appendChild(span);
             preview.appendChild(div);
-        }
+        });
+    }
+
+    function createThumbnailDataUrl(file) {
+        return new Promise((resolve) => {
+            const objectUrl = URL.createObjectURL(file);
+            const source = new Image();
+
+            source.onload = () => {
+                const maxWidth = 120;
+                const maxHeight = 80;
+                const ratio = Math.min(maxWidth / source.width, maxHeight / source.height, 1);
+                const thumbWidth = Math.max(1, Math.round(source.width * ratio));
+                const thumbHeight = Math.max(1, Math.round(source.height * ratio));
+                const canvas = document.createElement('canvas');
+                canvas.width = thumbWidth;
+                canvas.height = thumbHeight;
+                const ctx = canvas.getContext('2d');
+                if (ctx) {
+                    ctx.drawImage(source, 0, 0, thumbWidth, thumbHeight);
+                    resolve(canvas.toDataURL('image/png'));
+                } else {
+                    console.warn('Upload preview thumbnail skipped: unable to get canvas context.');
+                    resolve('');
+                }
+                URL.revokeObjectURL(objectUrl);
+            };
+
+            source.onerror = () => {
+                console.warn('Upload preview thumbnail skipped: unable to read image file.');
+                URL.revokeObjectURL(objectUrl);
+                resolve('');
+            };
+
+            source.src = objectUrl;
+        });
     }
 })();
 </script>
