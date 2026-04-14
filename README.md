@@ -4,6 +4,7 @@ A bilingual (Spanish/English) photography portfolio web application built with *
 
 ## 🆕 Recent Updates
 
+- **PR #34**: Added social network links to the Contact page and obfuscated the contact email address against scrapers.
 - **PR #30**: Added duplicated-images filter in the Admin Image Library.
 - **PR #29**: Added admin image library filters and bulk category/gallery actions.
 - Added DB index `idx_images_original_filename` to speed up duplicate image filtering.
@@ -27,6 +28,8 @@ A bilingual (Spanish/English) photography portfolio web application built with *
 - Full SMTP support with AUTH LOGIN, TLS/SSL encryption
 - SMTP credentials encrypted at rest via AES-256-GCM
 - Customizable sender name and email address
+- Contact email address obfuscated in HTML to deter scrapers
+- Social network links (Instagram, Facebook, Twitter/X, LinkedIn, YouTube, GitHub) displayed on the Contact page
 
 ### 🔒 Aggressive Image Protection
 - Images served through PHP — no direct file URLs ever exposed
@@ -76,13 +79,14 @@ All themes support automatic dark/light mode via `prefers-color-scheme` CSS medi
 - **Analytics**: Google Analytics GA4 integration with GDPR cookie consent banner
 - **SEO**: Meta titles/descriptions (ES/EN), Open Graph image, Twitter cards, XML sitemap
 - **Contact**: Mail driver selection (PHP mail / SMTP), SMTP host, port, encryption, credentials, sender name/email
+- **Social**: Social network profile URLs (Instagram, Facebook, Twitter/X, LinkedIn, YouTube, GitHub)
 
 ### 📄 Public Pages
 - **Homepage**: Welcome hero + featured categories
 - **Gallery**: Category grid → image grid within category
 - **Lightbox**: Full-screen image viewer with ← → keyboard/swipe navigation, image counter
 - **About**: Photographer bio page (editable from admin)
-- **Contact**: Contact form with honeypot + Cloudflare Turnstile spam protection, sends via configurable mail driver (PHP `mail()` or SMTP)
+- **Contact**: Contact form with honeypot + Cloudflare Turnstile spam protection, sends via configurable mail driver (PHP `mail()` or SMTP); displays social network links and obfuscated contact email
 - **Sitemap**: Dynamic XML sitemap at `/sitemap.xml`
 
 ---
@@ -171,6 +175,7 @@ vernocchi.es/
 │   ├── migration_phase2.sql        # Categories + images tables
 │   ├── migration_phase4.sql        # Settings table + default values
 │   ├── migration_smtp.sql          # SMTP/contact mail settings
+│   ├── migration_social_networks.sql # Social network settings
 │   └── seed_admin.php              # Create default admin user
 ├── public/                         # ← Apache document root
 │   ├── .htaccess                   # URL rewriting to index.php
@@ -278,7 +283,7 @@ mysql -u your_user -p your_database < database/schema.sql
 
 This creates all tables (`users`, `remember_tokens`, `sessions`, `categories`, `images`, `image_category`, `settings`) and seeds default settings.
 
-> **Existing installations:** If upgrading, run `database/migration_smtp.sql` to add SMTP/contact mail settings.
+> **Existing installations:** If upgrading, run `database/migration_smtp.sql` to add SMTP/contact mail settings, and `database/migration_social_networks.sql` to add social network settings.
 
 ### 4. Seed Admin Account
 
@@ -357,7 +362,7 @@ The repository includes a workflow (`.github/workflows/deploy.yml`) that automat
 | `categories` | Photography categories (bilingual names, slug, cover image, sort order, visibility) |
 | `images` | Photo metadata (filename, original filename, bilingual titles/alt text, dimensions, file size) |
 | `image_category` | Many-to-many mapping between images and categories with per-category sort order |
-| `settings` | Key-value settings store (site title, theme, watermark config, analytics, SEO, mail driver, SMTP credentials, etc.) |
+| `settings` | Key-value settings store (site title, theme, watermark config, analytics, SEO, mail driver, SMTP credentials, social network URLs, etc.) |
 
 ---
 
@@ -415,6 +420,7 @@ The repository includes a workflow (`.github/workflows/deploy.yml`) that automat
 | POST | `/admin/settings/analytics` | Update analytics settings |
 | POST | `/admin/settings/seo` | Update SEO settings |
 | POST | `/admin/settings/contact` | Update contact/mail settings |
+| POST | `/admin/settings/social` | Update social network settings |
 | GET/POST | `/admin/settings/password` | Change password |
 
 ---
@@ -462,6 +468,7 @@ storage/
 - [ ] Change default password in Settings → Password
 - [ ] Configure site settings (title, theme, contact email, analytics)
 - [ ] Configure mail settings (PHP mail or SMTP) in Settings → Contact
+- [ ] Configure social network profile URLs in Settings → Social (optional)
 - [ ] Create your first photography category
 - [ ] Upload your first photos
 - [ ] Configure watermark settings (optional)
