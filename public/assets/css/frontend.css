@@ -944,10 +944,10 @@ html[data-theme="dark"] .contact-status.error {
   z-index: var(--z-toast);
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow: var(--shadow-2xl);
-  animation: slideUp var(--transition-slow);
+  animation: cookieBannerIn var(--transition-slow) forwards;
 }
 
-@keyframes slideUp {
+@keyframes cookieBannerIn {
   from {
     opacity: 0;
     transform: translateY(100%);
@@ -955,6 +955,21 @@ html[data-theme="dark"] .contact-status.error {
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+.cookie-banner.cookie-banner--hiding {
+  animation: cookieBannerOut var(--transition-slow) forwards;
+}
+
+@keyframes cookieBannerOut {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(100%);
   }
 }
 
