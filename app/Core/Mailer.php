@@ -338,8 +338,8 @@ class Mailer
         }
 
         $logDir = dirname($logPath);
-        if (!is_dir($logDir)) {
-            @mkdir($logDir, 0755, true);
+        if (!is_dir($logDir) && !@mkdir($logDir, 0755, true) && !is_dir($logDir)) {
+            return;
         }
 
         @file_put_contents(
@@ -375,6 +375,11 @@ class Mailer
     private static function sanitizeLogValue(string $value): string
     {
         $singleLine = str_replace(["\r\n", "\r", "\n"], ' | ', trim($value));
-        return preg_replace('/\s+/', ' ', $singleLine) ?? $singleLine;
+        $collapsed = preg_replace('/\s+/', ' ', $singleLine);
+        if ($collapsed === null) {
+            throw new \RuntimeException('Failed to sanitize SMTP debug log value.');
+        }
+
+        return $collapsed;
     }
 }
