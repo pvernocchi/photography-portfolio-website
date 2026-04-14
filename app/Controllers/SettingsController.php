@@ -82,6 +82,13 @@ class SettingsController extends Controller
     public function updateContact(): void
     {
         $this->guardCsrf('/admin/settings');
+
+        $driver = trim((string) ($_POST['mail_driver'] ?? 'mail'));
+        if (!in_array($driver, ['mail', 'smtp'], true)) {
+            $driver = 'mail';
+        }
+        Setting::set('mail_driver', $driver, 'text', 'contact');
+
         $this->saveMany(['smtp_host', 'smtp_port', 'smtp_encryption', 'smtp_username', 'smtp_from_name', 'smtp_from_email'], 'contact');
 
         $newPassword = trim((string) ($_POST['smtp_password'] ?? ''));

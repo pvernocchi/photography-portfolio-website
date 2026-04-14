@@ -157,36 +157,55 @@ $s = static fn (string $key, string $default = ''): string => (string) ($setting
 </section>
 
 <section class="tab-panel" data-panel="contact">
-    <form class="card form-stack" method="post" action="/admin/settings/contact">
+    <form class="card form-stack" method="post" action="/admin/settings/contact" id="contact-form">
         <?= CSRF::field() ?>
-        <label>SMTP Host
-            <input name="smtp_host" value="<?= e($s('smtp_host')) ?>">
-        </label>
-        <label>SMTP Port
-            <input name="smtp_port" type="number" min="1" value="<?= e($s('smtp_port', '587')) ?>">
-        </label>
-        <label>Encryption
-            <select name="smtp_encryption">
-                <option value="none" <?= $s('smtp_encryption', 'tls') === 'none' ? 'selected' : '' ?>>none</option>
-                <option value="ssl" <?= $s('smtp_encryption') === 'ssl' ? 'selected' : '' ?>>ssl</option>
-                <option value="tls" <?= $s('smtp_encryption', 'tls') === 'tls' ? 'selected' : '' ?>>tls</option>
+        <label>Mail driver
+            <select name="mail_driver" id="mail-driver-select">
+                <option value="mail" <?= $s('mail_driver', 'mail') === 'mail' ? 'selected' : '' ?>>PHP mail()</option>
+                <option value="smtp" <?= $s('mail_driver', 'mail') === 'smtp' ? 'selected' : '' ?>>SMTP</option>
             </select>
         </label>
-        <label>Username
-            <input name="smtp_username" value="<?= e($s('smtp_username')) ?>">
-        </label>
-        <label>Password
-            <input name="smtp_password" type="password" autocomplete="off">
-            <?php if ($s('smtp_password') !== ''): ?>
-                <small class="muted">Leave blank to keep existing password.</small>
-            <?php endif; ?>
-        </label>
-        <label>From name
-            <input name="smtp_from_name" value="<?= e($s('smtp_from_name')) ?>">
-        </label>
-        <label>From email
-            <input name="smtp_from_email" value="<?= e($s('smtp_from_email')) ?>">
-        </label>
+        <div id="smtp-fields">
+            <label>SMTP Host
+                <input name="smtp_host" value="<?= e($s('smtp_host')) ?>">
+            </label>
+            <label>SMTP Port
+                <input name="smtp_port" type="number" min="1" value="<?= e($s('smtp_port', '587')) ?>">
+            </label>
+            <label>Encryption
+                <select name="smtp_encryption">
+                    <option value="none" <?= $s('smtp_encryption', 'tls') === 'none' ? 'selected' : '' ?>>none</option>
+                    <option value="ssl" <?= $s('smtp_encryption') === 'ssl' ? 'selected' : '' ?>>ssl</option>
+                    <option value="tls" <?= $s('smtp_encryption', 'tls') === 'tls' ? 'selected' : '' ?>>tls</option>
+                </select>
+            </label>
+            <label>Username
+                <input name="smtp_username" value="<?= e($s('smtp_username')) ?>">
+            </label>
+            <label>Password
+                <input name="smtp_password" type="password" autocomplete="off">
+                <?php if ($s('smtp_password') !== ''): ?>
+                    <small class="muted">Leave blank to keep existing password.</small>
+                <?php endif; ?>
+            </label>
+            <label>From name
+                <input name="smtp_from_name" value="<?= e($s('smtp_from_name')) ?>">
+            </label>
+            <label>From email
+                <input name="smtp_from_email" value="<?= e($s('smtp_from_email')) ?>">
+            </label>
+        </div>
         <button class="btn btn-primary">Save</button>
     </form>
+    <script>
+        (function () {
+            var select = document.getElementById('mail-driver-select');
+            var smtpFields = document.getElementById('smtp-fields');
+            function toggle() {
+                smtpFields.style.display = select.value === 'smtp' ? '' : 'none';
+            }
+            toggle();
+            select.addEventListener('change', toggle);
+        }());
+    </script>
 </section>

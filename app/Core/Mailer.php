@@ -12,12 +12,7 @@ class Mailer
 
     public static function send(string $to, string $subject, string $body, string $replyTo = ''): bool
     {
-        $smtpHost = trim((string) Setting::get('smtp_host', ''));
-        $smtpPort = (int) trim((string) Setting::get('smtp_port', '587'));
-        $smtpEncryption = trim((string) Setting::get('smtp_encryption', 'tls'));
-        $smtpUsername = trim((string) Setting::get('smtp_username', ''));
-        $smtpPasswordEncrypted = (string) Setting::get('smtp_password', '');
-        $smtpPassword = Encryption::decrypt($smtpPasswordEncrypted);
+        $mailDriver = trim((string) Setting::get('mail_driver', 'mail'));
 
         $fromName = trim((string) Setting::get('smtp_from_name', ''));
         if ($fromName === '') {
@@ -29,9 +24,16 @@ class Mailer
             $fromEmail = trim((string) Setting::get('contact_email', ''));
         }
 
-        if ($smtpHost === '') {
+        if ($mailDriver !== 'smtp') {
             return self::sendWithMail($to, $subject, $body, $replyTo, $fromName, $fromEmail);
         }
+
+        $smtpHost = trim((string) Setting::get('smtp_host', ''));
+        $smtpPort = (int) trim((string) Setting::get('smtp_port', '587'));
+        $smtpEncryption = trim((string) Setting::get('smtp_encryption', 'tls'));
+        $smtpUsername = trim((string) Setting::get('smtp_username', ''));
+        $smtpPasswordEncrypted = (string) Setting::get('smtp_password', '');
+        $smtpPassword = Encryption::decrypt($smtpPasswordEncrypted);
 
         if ($smtpPasswordEncrypted !== '' && $smtpPassword === '') {
             error_log('Mailer: SMTP password decryption failed.');
