@@ -18,13 +18,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const src = categoryItems[current].dataset.displaySrc;
     const img = new Image();
     img.onload = () => {
-      const ratio = Math.min(canvas.width / img.width, canvas.height / img.height);
-      const w = img.width * ratio;
-      const h = img.height * ratio;
-      const x = (canvas.width - w) / 2;
-      const y = (canvas.height - h) / 2;
+      const maxW = Math.min(window.innerWidth * 0.92, 1400);
+      const maxH = Math.min(window.innerHeight * 0.85, 900);
+      const ratio = Math.min(maxW / img.width, maxH / img.height);
+      canvas.width = Math.round(img.width * ratio);
+      canvas.height = Math.round(img.height * ratio);
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.drawImage(img, x, y, w, h);
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
       counter.textContent = `${current + 1} / ${categoryItems.length}`;
     };
     img.src = src;
