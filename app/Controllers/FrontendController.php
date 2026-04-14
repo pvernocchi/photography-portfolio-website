@@ -113,7 +113,7 @@ class FrontendController extends Controller
 
         $turnstileSecretKey = trim((string) Setting::get('turnstile_secret_key', (string) app_config('turnstile.secret_key', '')));
         $turnstileToken = trim((string) ($_POST['cf-turnstile-response'] ?? ''));
-        $remoteIp = (string) ($_SERVER['REMOTE_ADDR'] ?? '');
+        $remoteIp = (string) ($_SERVER['HTTP_CF_CONNECTING_IP'] ?? $_SERVER['REMOTE_ADDR'] ?? '');
         if ($turnstileSecretKey !== '') {
             if ($turnstileToken === '' || !$this->verifyTurnstileToken($turnstileToken, $turnstileSecretKey, $remoteIp)) {
                 http_response_code(400);
