@@ -49,6 +49,12 @@ use App\Core\CSRF;
         <input type="hidden" name="return_to" value="<?= e((string) ($returnTo ?? '/admin/images')) ?>">
         <div class="bulk-bar-actions">
             <?php if (!empty($categories)): ?>
+            <select name="assign_category_id" class="bulk-bar-select" aria-label="Select gallery to assign images to">
+                <option value="">Assign to gallery</option>
+                <?php foreach ($categories as $cat): ?>
+                <option value="<?= (int) $cat['id'] ?>"><?= e($cat['name_en']) ?></option>
+                <?php endforeach; ?>
+            </select>
             <select name="category_id" class="bulk-bar-select" aria-label="Select gallery to remove images from">
                 <option value="">Select gallery</option>
                 <?php foreach ($categories as $cat): ?>
