@@ -332,6 +332,10 @@ class Mailer
      */
     private static function debugLog(string $message): void
     {
+        if (!self::isSmtpDebugLoggingEnabled()) {
+            return;
+        }
+
         $logPath = self::smtpDebugLogPath();
         if ($logPath === '') {
             return;
@@ -347,6 +351,11 @@ class Mailer
             sprintf("[%s] %s\n", date('c'), $message),
             FILE_APPEND | LOCK_EX
         );
+    }
+
+    private static function isSmtpDebugLoggingEnabled(): bool
+    {
+        return trim((string) Setting::get('smtp_logging_enabled', '1')) === '1';
     }
 
     /**

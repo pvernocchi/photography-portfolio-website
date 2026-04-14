@@ -27,7 +27,7 @@ A bilingual (Spanish/English) photography portfolio web application built with *
 - Configurable mail driver: PHP `mail()` or SMTP
 - Full SMTP support with AUTH LOGIN, TLS/SSL encryption
 - SMTP credentials encrypted at rest via AES-256-GCM
-- SMTP debug logging to `storage/logs/smtp-debug.log` (or custom path via config)
+- SMTP debug logging toggle in admin (logs written to `storage/logs/smtp-debug.log` or custom path via config)
 - Customizable sender name and email address
 - Contact email address obfuscated in HTML to deter scrapers
 - Social network links (Instagram, Facebook, Twitter/X, LinkedIn, YouTube, GitHub) displayed on the Contact page
@@ -79,7 +79,7 @@ All themes support automatic dark/light mode via `prefers-color-scheme` CSS medi
 - **Watermark**: Enable/disable, text, position, opacity, font size
 - **Analytics**: Google Analytics GA4 integration with GDPR cookie consent banner
 - **SEO**: Meta titles/descriptions (ES/EN), Open Graph image, Twitter cards, XML sitemap
-- **Contact**: Mail driver selection (PHP mail / SMTP), SMTP host, port, encryption, credentials, sender name/email
+- **Contact**: Mail driver selection (PHP mail / SMTP), SMTP host, port, encryption, debug logging toggle, credentials, sender name/email
 - **Social**: Social network profile URLs (Instagram, Facebook, Twitter/X, LinkedIn, YouTube, GitHub)
 
 ### 📄 Public Pages

@@ -107,6 +107,7 @@ INSERT INTO settings (setting_key, setting_value, setting_type, setting_group) V
 ('smtp_host', '', 'text', 'contact'),
 ('smtp_port', '587', 'text', 'contact'),
 ('smtp_encryption', 'tls', 'select', 'contact'),
+('smtp_logging_enabled', '1', 'boolean', 'contact'),
 ('smtp_username', '', 'text', 'contact'),
 ('smtp_password', '', 'text', 'contact'),
 ('smtp_from_name', '', 'text', 'contact'),

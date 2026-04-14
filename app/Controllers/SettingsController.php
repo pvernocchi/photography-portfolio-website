@@ -95,6 +95,7 @@ class SettingsController extends Controller
             $driver = 'mail';
         }
         Setting::set('mail_driver', $driver, 'text', 'contact');
+        Setting::set('smtp_logging_enabled', isset($_POST['smtp_logging_enabled']) ? '1' : '0', 'boolean', 'contact');
 
         $this->saveMany(['smtp_host', 'smtp_port', 'smtp_encryption', 'smtp_username', 'smtp_from_name', 'smtp_from_email'], 'contact');
 
