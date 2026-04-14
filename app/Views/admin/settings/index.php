@@ -38,6 +38,12 @@ $s = static fn (string $key, string $default = ''): string => (string) ($setting
         <label>Contact email
             <input name="contact_email" value="<?= e($s('contact_email')) ?>">
         </label>
+        <label>Turnstile site key
+            <input name="turnstile_site_key" value="<?= e($s('turnstile_site_key')) ?>">
+        </label>
+        <label>Turnstile secret key
+            <input name="turnstile_secret_key" type="password" value="<?= e($s('turnstile_secret_key')) ?>" autocomplete="off">
+        </label>
         <label>Description (ES)
             <textarea name="site_description_es"><?= e($s('site_description_es')) ?></textarea>
         </label>

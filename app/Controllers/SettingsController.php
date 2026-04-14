@@ -25,7 +25,7 @@ class SettingsController extends Controller
     public function updateGeneral(): void
     {
         $this->guardCsrf('/admin/settings');
-        $this->saveMany(['site_title', 'site_description_es', 'site_description_en', 'default_language', 'contact_email']);
+        $this->saveMany(['site_title', 'site_description_es', 'site_description_en', 'default_language', 'contact_email', 'turnstile_site_key', 'turnstile_secret_key']);
         $this->done('General settings updated.');
     }
 

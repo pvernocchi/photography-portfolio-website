@@ -15,12 +15,18 @@ class Setting
         return $all[$key]['setting_value'] ?? $default;
     }
 
-    public static function set(string $key, mixed $value): bool
+    public static function set(string $key, mixed $value, string $type = 'text', string $group = 'general'): bool
     {
-        $statement = Database::instance()->pdo()->prepare('UPDATE settings SET setting_value = :setting_value WHERE setting_key = :setting_key');
+        $statement = Database::instance()->pdo()->prepare(
+            'INSERT INTO settings (setting_key, setting_value, setting_type, setting_group) 
+             VALUES (:setting_key, :setting_value, :setting_type, :setting_group)
+             ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value), updated_at = CURRENT_TIMESTAMP'
+        );
         $result = $statement->execute([
             ':setting_key' => $key,
             ':setting_value' => $value,
+            ':setting_type' => $type,
+            ':setting_group' => $group,
         ]);
 
         self::$cache = null;

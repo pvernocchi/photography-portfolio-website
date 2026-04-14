@@ -77,6 +77,7 @@ class FrontendController extends Controller
         $siteTitle = (string) Setting::get('site_title', 'Vernocchi Photography');
         $contactEmail = (string) Setting::get('contact_email', '');
         $siteDescription = (string) Setting::get('site_description_' . $locale, '');
+        $turnstileSiteKey = trim((string) Setting::get('turnstile_site_key', (string) app_config('turnstile.site_key', '')));
 
         $this->render('frontend/contact', [
             'title' => __('contact.title'),
@@ -88,6 +89,7 @@ class FrontendController extends Controller
             'metaDescription' => $this->metaDescription(),
             'gaId' => (string) Setting::get('google_analytics_id', ''),
             'csrfToken' => \App\Core\CSRF::token(),
+            'turnstileSiteKey' => $turnstileSiteKey,
             'pageScripts' => ['/assets/js/contact-form.js'],
         ], 'frontend');
     }
@@ -106,6 +108,17 @@ class FrontendController extends Controller
             http_response_code(200);
             echo json_encode(['success' => true, 'message' => __('contact.success')]);
             return;
+        }
+
+        $turnstileSecretKey = trim((string) Setting::get('turnstile_secret_key', (string) app_config('turnstile.secret_key', '')));
+        $turnstileToken = trim((string) ($_POST['cf-turnstile-response'] ?? ''));
+        $remoteIp = (string) ($_SERVER['REMOTE_ADDR'] ?? '');
+        if ($turnstileSecretKey !== '') {
+            if ($turnstileToken === '' || !$this->verifyTurnstileToken($turnstileToken, $turnstileSecretKey, $remoteIp)) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => __('contact.captcha_error')]);
+                return;
+            }
         }
 
         $name = trim((string) ($_POST['name'] ?? ''));
@@ -166,6 +179,38 @@ class FrontendController extends Controller
             http_response_code(500);
             echo json_encode(['success' => false, 'message' => __('contact.error')]);
         }
+    }
+
+    private function verifyTurnstileToken(string $token, string $secretKey, string $remoteIp): bool
+    {
+        $payload = http_build_query([
+            'secret' => $secretKey,
+            'response' => $token,
+            'remoteip' => $remoteIp,
+        ]);
+
+        $context = stream_context_create([
+            'http' => [
+                'method' => 'POST',
+                'header' => "Content-Type: application/x-www-form-urlencoded\r\n",
+                'content' => $payload,
+                'timeout' => 5,
+            ],
+        ]);
+
+        try {
+            $response = file_get_contents('https://challenges.cloudflare.com/turnstile/v0/siteverify', false, $context);
+        } catch (\Throwable $throwable) {
+            error_log('Turnstile verification failed: ' . $throwable->getMessage());
+            return false;
+        }
+
+        if ($response === false) {
+            return false;
+        }
+
+        $decoded = json_decode($response, true);
+        return is_array($decoded) && ($decoded['success'] ?? false) === true;
     }
 
     public function switchLanguage(string $locale): void
