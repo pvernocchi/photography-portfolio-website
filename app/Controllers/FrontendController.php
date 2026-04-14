@@ -98,7 +98,7 @@ class FrontendController extends Controller
     public function sendContact(): void
     {
         // Validate CSRF token
-        if (!isset($_POST['csrf_token']) || !\App\Core\CSRF::verify((string) $_POST['csrf_token'])) {
+        if (!isset($_POST['csrf_token']) || !\App\Core\CSRF::validate((string) $_POST['csrf_token'])) {
             http_response_code(403);
             echo json_encode(['success' => false, 'message' => 'Invalid request']);
             return;
