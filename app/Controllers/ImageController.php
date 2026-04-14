@@ -40,6 +40,20 @@ class ImageController extends Controller
         ]);
     }
 
+    public function duplicated(): void
+    {
+        $categories = Category::all();
+        $this->render('admin/images/library', [
+            'title' => 'Duplicated Images',
+            'images' => Image::duplicated(),
+            'categories' => $categories,
+            'activeFilter' => 'duplicated',
+            'returnTo' => '/admin/images/duplicated',
+            'success' => Session::flash('success'),
+            'error' => Session::flash('error'),
+        ]);
+    }
+
     public function index(string $id): void
     {
         $category = Category::find((int) $id);
@@ -328,6 +342,7 @@ class ImageController extends Controller
         // Allow only known safe admin return paths (no traversal, no query strings).
         $allowedPaths = ['/admin/images'];
         $allowedPaths[] = '/admin/images/unassigned';
+        $allowedPaths[] = '/admin/images/duplicated';
         $categoryId = (int) ($_POST['category_id'] ?? 0);
         $assignCategoryId = (int) ($_POST['assign_category_id'] ?? $_POST['category_id'] ?? 0);
         if ($categoryId > 0) {

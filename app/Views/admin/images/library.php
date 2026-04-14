@@ -3,7 +3,15 @@ declare(strict_types=1);
 use App\Core\CSRF;
 ?>
 <header class="page-header row-between">
-    <h1><?= ($activeFilter ?? 'all') === 'unassigned' ? 'Images Without Category' : 'Image Library' ?></h1>
+    <h1>
+        <?php if (($activeFilter ?? 'all') === 'unassigned'): ?>
+            Images Without Category
+        <?php elseif (($activeFilter ?? 'all') === 'duplicated'): ?>
+            Duplicated Images
+        <?php else: ?>
+            Image Library
+        <?php endif; ?>
+    </h1>
     <div class="row-between" style="gap:0.5rem">
         <button type="button" id="bulk-select-all" class="btn-link">Select all</button>
         <button type="button" id="bulk-select-none" class="btn-link" style="display:none">Deselect all</button>
@@ -15,6 +23,7 @@ use App\Core\CSRF;
 <nav class="tabs">
     <a class="tab-btn <?= ($activeFilter ?? 'all') === 'all' ? 'active' : '' ?>" href="/admin/images">All images</a>
     <a class="tab-btn <?= ($activeFilter ?? 'all') === 'unassigned' ? 'active' : '' ?>" href="/admin/images/unassigned">Without category assigned</a>
+    <a class="tab-btn <?= ($activeFilter ?? 'all') === 'duplicated' ? 'active' : '' ?>" href="/admin/images/duplicated">Duplicated images</a>
     <?php foreach ($categories as $cat): ?>
         <?php if ((int) ($cat['images_count'] ?? 0) < 1) { continue; } ?>
         <a class="tab-btn" href="/admin/categories/<?= (int) $cat['id'] ?>/images"><?= e($cat['name_en']) ?></a>

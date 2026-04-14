@@ -15,6 +15,7 @@ use App\Core\CSRF;
 <nav class="tabs">
     <a class="tab-btn" href="/admin/images">All images</a>
     <a class="tab-btn" href="/admin/images/unassigned">Without category assigned</a>
+    <a class="tab-btn" href="/admin/images/duplicated">Duplicated images</a>
     <?php foreach ($categories as $cat): ?>
         <?php if ((int) ($cat['images_count'] ?? 0) < 1 && (int) $cat['id'] !== (int) $category['id']) { continue; } ?>
         <a class="tab-btn <?= (int) $cat['id'] === (int) $category['id'] ? 'active' : '' ?>" href="/admin/categories/<?= (int) $cat['id'] ?>/images"><?= e($cat['name_en']) ?></a>
