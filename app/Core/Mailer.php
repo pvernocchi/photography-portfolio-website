@@ -338,7 +338,7 @@ class Mailer
         }
 
         $logDir = dirname($logPath);
-        if (!is_dir($logDir) && !@mkdir($logDir, 0750, true) && !is_dir($logDir)) {
+        if (!is_dir($logDir) && !@mkdir($logDir, 0700, true) && !is_dir($logDir)) {
             return;
         }
 
