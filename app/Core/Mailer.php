@@ -100,6 +100,16 @@ class Mailer
         string $body,
         string $replyTo
     ): bool {
+        if ($host === '') {
+            error_log('Mailer: SMTP host is not configured.');
+            return false;
+        }
+
+        if ($fromEmail === '') {
+            error_log('Mailer: SMTP from email address is not configured.');
+            return false;
+        }
+
         if ($username === '' || $password === '') {
             error_log('Mailer: SMTP host configured but username/password are missing.');
             return false;
@@ -201,9 +211,14 @@ class Mailer
         }
 
         $message = implode("\r\n", $headers) . "\r\n\r\n" . self::prepareBody($body) . "\r\n.";
-        fwrite($socket, $message . "\r\n");
+        $written = fwrite($socket, $message . "\r\n");
+        if ($written === false) {
+            error_log('Mailer: failed to write message body to SMTP socket.');
+            fclose($socket);
+            return false;
+        }
 
-        if (!self::expectCode($socket, [250])) {
+        if (!self::expectCode($socket, [250], 'DATA body')) {
             fclose($socket);
             return false;
         }
