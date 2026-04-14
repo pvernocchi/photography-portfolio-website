@@ -199,8 +199,8 @@ $s = static fn (string $key, string $default = ''): string => (string) ($setting
     </form>
     <script>
         (function () {
-            var select = document.getElementById('mail-driver-select');
-            var smtpFields = document.getElementById('smtp-fields');
+            const select = document.getElementById('mail-driver-select');
+            const smtpFields = document.getElementById('smtp-fields');
             function toggle() {
                 smtpFields.style.display = select.value === 'smtp' ? '' : 'none';
             }
