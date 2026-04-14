@@ -194,13 +194,14 @@ class FrontendController extends Controller
                 'method' => 'POST',
                 'header' => "Content-Type: application/x-www-form-urlencoded\r\n",
                 'content' => $payload,
-                'timeout' => 3,
+                'timeout' => 5,
             ],
         ]);
 
         try {
             $response = file_get_contents('https://challenges.cloudflare.com/turnstile/v0/siteverify', false, $context);
-        } catch (\Throwable) {
+        } catch (\Throwable $throwable) {
+            error_log('Turnstile verification failed: ' . $throwable->getMessage());
             return false;
         }
 
