@@ -216,6 +216,51 @@ class ImageController extends Controller
         $this->redirect('/admin/images');
     }
 
+    public function bulkAction(): void
+    {
+        if (!CSRF::validate($_POST['csrf_token'] ?? null)) {
+            Session::flash('error', 'Invalid security token.');
+            $this->redirect('/admin/images');
+        }
+
+        $action = (string) ($_POST['action'] ?? '');
+        $rawIds = (array) ($_POST['ids'] ?? []);
+        $ids = array_values(array_filter(array_map('intval', $rawIds), static fn(int $id) => $id > 0));
+        $returnTo = (string) ($_POST['return_to'] ?? '/admin/images');
+
+        // Restrict return_to to safe admin paths only.
+        if (!preg_match('#^/admin/[a-z0-9/_-]*$#', $returnTo)) {
+            $returnTo = '/admin/images';
+        }
+
+        if ($ids === []) {
+            Session::flash('error', 'No images selected.');
+            $this->redirect($returnTo);
+        }
+
+        if ($action === 'delete') {
+            $images = Image::findMany($ids);
+            foreach ($images as $image) {
+                ImageProcessor::deleteImages((string) $image['filename']);
+            }
+            Image::deleteMany($ids);
+            Session::flash('success', count($images) . ' image(s) deleted.');
+        } elseif ($action === 'remove_from_category') {
+            $categoryId = (int) ($_POST['category_id'] ?? 0);
+            if ($categoryId < 1) {
+                Session::flash('error', 'Invalid category.');
+                $this->redirect($returnTo);
+            }
+            Image::removeFromCategory($categoryId, $ids);
+            Session::flash('success', count($ids) . ' image(s) removed from gallery.');
+        } else {
+            Session::flash('error', 'Unknown action.');
+            $this->redirect($returnTo);
+        }
+
+        $this->redirect($returnTo);
+    }
+
     public function reorder(string $id): void
     {
         if (!CSRF::validate($_POST['csrf_token'] ?? null)) {

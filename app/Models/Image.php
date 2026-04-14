@@ -69,6 +69,43 @@ class Image
         return $statement->execute([':id' => $id]);
     }
 
+    /** @param int[] $ids */
+    public static function findMany(array $ids): array
+    {
+        if ($ids === []) {
+            return [];
+        }
+        $placeholders = implode(',', array_fill(0, count($ids), '?'));
+        $statement = Database::instance()->pdo()->prepare("SELECT * FROM images WHERE id IN ($placeholders)");
+        $statement->execute(array_map('intval', $ids));
+        return $statement->fetchAll() ?: [];
+    }
+
+    /** @param int[] $ids */
+    public static function deleteMany(array $ids): void
+    {
+        if ($ids === []) {
+            return;
+        }
+        $placeholders = implode(',', array_fill(0, count($ids), '?'));
+        Database::instance()->pdo()
+            ->prepare("DELETE FROM images WHERE id IN ($placeholders)")
+            ->execute(array_map('intval', $ids));
+    }
+
+    /** @param int[] $imageIds */
+    public static function removeFromCategory(int $categoryId, array $imageIds): void
+    {
+        if ($imageIds === []) {
+            return;
+        }
+        $placeholders = implode(',', array_fill(0, count($imageIds), '?'));
+        $params = array_merge([$categoryId], array_map('intval', $imageIds));
+        Database::instance()->pdo()
+            ->prepare("DELETE FROM image_category WHERE category_id = ? AND image_id IN ($placeholders)")
+            ->execute($params);
+    }
+
     public static function reorder(int $categoryId, array $ids): void
     {
         $pdo = Database::instance()->pdo();

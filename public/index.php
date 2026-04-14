@@ -67,6 +67,7 @@ $router->group('/admin', [], static function (Router $router): void {
         $router->get('/images/{id}/edit', [ImageController::class, 'edit']);
         $router->post('/images/{id}/update', [ImageController::class, 'update']);
         $router->post('/images/{id}/delete', [ImageController::class, 'delete']);
+        $router->post('/images/bulk-action', [ImageController::class, 'bulkAction']);
 
         $router->get('/settings', [SettingsController::class, 'index']);
         $router->post('/settings/general', [SettingsController::class, 'updateGeneral']);
