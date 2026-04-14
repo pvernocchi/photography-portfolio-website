@@ -5,6 +5,7 @@ namespace App\Controllers;
 
 use App\Core\CSRF;
 use App\Core\Controller;
+use App\Core\Encryption;
 use App\Core\Session;
 use App\Core\ThemeEngine;
 use App\Models\Setting;
@@ -25,8 +26,15 @@ class SettingsController extends Controller
     public function updateGeneral(): void
     {
         $this->guardCsrf('/admin/settings');
-        $this->saveMany(['site_title', 'site_description_es', 'site_description_en', 'default_language', 'contact_email', 'turnstile_site_key', 'turnstile_secret_key']);
+        $this->saveMany(['site_title', 'site_description_es', 'site_description_en', 'default_language', 'contact_email']);
         $this->done('General settings updated.');
+    }
+
+    public function updateSecurity(): void
+    {
+        $this->guardCsrf('/admin/settings');
+        $this->saveMany(['turnstile_site_key', 'turnstile_secret_key']);
+        $this->done('Security settings updated.');
     }
 
     public function updateTheme(): void
@@ -71,10 +79,23 @@ class SettingsController extends Controller
         $this->done('SEO settings updated.');
     }
 
-    private function saveMany(array $keys): void
+    public function updateContact(): void
+    {
+        $this->guardCsrf('/admin/settings');
+        $this->saveMany(['smtp_host', 'smtp_port', 'smtp_encryption', 'smtp_username', 'smtp_from_name', 'smtp_from_email'], 'contact');
+
+        $newPassword = trim((string) ($_POST['smtp_password'] ?? ''));
+        if ($newPassword !== '') {
+            Setting::set('smtp_password', Encryption::encrypt($newPassword), 'text', 'contact');
+        }
+
+        $this->done('Contact settings updated.');
+    }
+
+    private function saveMany(array $keys, string $group = 'general'): void
     {
         foreach ($keys as $key) {
-            Setting::set($key, trim((string) ($_POST[$key] ?? '')));
+            Setting::set($key, trim((string) ($_POST[$key] ?? '')), 'text', $group);
         }
     }
 

@@ -7,6 +7,7 @@ return [
         'url' => 'https://vernocchi.es',
         'debug' => false,
         'default_language' => 'es',
+        'key' => '', // Set a random 32-character string for encryption
     ],
     'database' => [
         'host' => 'localhost',
