@@ -251,7 +251,6 @@ class ImageController extends Controller
             Image::deleteMany($ids);
             Session::flash('success', count($images) . ' image(s) deleted.');
         } elseif ($action === 'remove_from_category') {
-            $categoryId = (int) ($_POST['category_id'] ?? 0);
             if ($categoryId < 1) {
                 Session::flash('error', 'Invalid category.');
                 $this->redirect($returnTo);

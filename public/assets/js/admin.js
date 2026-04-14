@@ -19,11 +19,15 @@ window.AdminBulkSelect = {
       return [...grid.querySelectorAll('.image-card-checkbox')];
     }
 
+    function plural(n, word) {
+      return n + ' ' + word + (n !== 1 ? 's' : '');
+    }
+
     function updateBar() {
       const checked = grid.querySelectorAll('.image-card-checkbox:checked');
       const count = checked.length;
       bar.hidden = count === 0;
-      if (countEl) countEl.textContent = count + ' image' + (count !== 1 ? 's' : '') + ' selected';
+      if (countEl) countEl.textContent = plural(count, 'image') + ' selected';
       if (selectNoneBtn) selectNoneBtn.style.display = count > 0 ? '' : 'none';
 
       if (idsContainer) {
@@ -81,11 +85,11 @@ window.AdminBulkSelect = {
       // e.submitter is supported in all modern browsers; fall back to data attribute set on click.
       const action = e.submitter?.value || form.dataset.pendingAction || '';
       if (action === 'delete') {
-        if (!confirm('Permanently delete ' + checked.length + ' image(s)? This cannot be undone.')) {
+        if (!confirm('Permanently delete ' + plural(checked.length, 'image') + '? This cannot be undone.')) {
           e.preventDefault();
         }
       } else if (action === 'remove_from_category') {
-        if (!confirm('Remove ' + checked.length + ' image(s) from this gallery?')) {
+        if (!confirm('Remove ' + plural(checked.length, 'image') + ' from this gallery?')) {
           e.preventDefault();
         }
       }
