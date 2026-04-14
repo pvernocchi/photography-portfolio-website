@@ -113,10 +113,12 @@ class FrontendController extends Controller
         $turnstileSecretKey = trim((string) app_config('turnstile.secret_key', ''));
         $turnstileToken = trim((string) ($_POST['cf-turnstile-response'] ?? ''));
         $remoteIp = (string) ($_SERVER['REMOTE_ADDR'] ?? '');
-        if ($turnstileSecretKey === '' || $turnstileToken === '' || !$this->verifyTurnstileToken($turnstileToken, $turnstileSecretKey, $remoteIp)) {
-            http_response_code(400);
-            echo json_encode(['success' => false, 'message' => __('contact.captcha_error')]);
-            return;
+        if ($turnstileSecretKey !== '') {
+            if ($turnstileToken === '' || !$this->verifyTurnstileToken($turnstileToken, $turnstileSecretKey, $remoteIp)) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => __('contact.captcha_error')]);
+                return;
+            }
         }
 
         $name = trim((string) ($_POST['name'] ?? ''));
@@ -192,11 +194,16 @@ class FrontendController extends Controller
                 'method' => 'POST',
                 'header' => "Content-Type: application/x-www-form-urlencoded\r\n",
                 'content' => $payload,
-                'timeout' => 5,
+                'timeout' => 3,
             ],
         ]);
 
-        $response = @file_get_contents('https://challenges.cloudflare.com/turnstile/v0/siteverify', false, $context);
+        try {
+            $response = file_get_contents('https://challenges.cloudflare.com/turnstile/v0/siteverify', false, $context);
+        } catch (\Throwable) {
+            return false;
+        }
+
         if ($response === false) {
             return false;
         }

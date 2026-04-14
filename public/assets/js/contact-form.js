@@ -73,7 +73,12 @@
       console.error('Contact form error:', error);
     } finally {
       if (captchaWidget && window.turnstile && typeof window.turnstile.reset === 'function') {
-        window.turnstile.reset();
+        const widgetId = captchaWidget.getAttribute('data-widget-id');
+        if (widgetId) {
+          window.turnstile.reset(widgetId);
+        } else {
+          window.turnstile.reset();
+        }
       }
 
       // Re-enable submit button
