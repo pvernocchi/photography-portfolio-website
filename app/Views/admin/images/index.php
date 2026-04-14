@@ -4,7 +4,7 @@ use App\Core\CSRF;
 ?>
 <header class="page-header row-between">
     <h1>Images — <?= e($category['name_en']) ?></h1>
-    <a class="btn btn-primary" href="/admin/categories/<?= (int) $category['id'] ?>/images/upload">Upload images</a>
+    <a class="btn btn-primary" href="/admin/images/upload">Upload images</a>
 </header>
 <?php if (!empty($success)): ?><div class="alert alert-success"><?= e($success) ?></div><?php endif; ?>
 <?php if (!empty($error)): ?><div class="alert alert-error"><?= e($error) ?></div><?php endif; ?>
@@ -15,7 +15,7 @@ use App\Core\CSRF;
         <div class="actions">
             <button type="button" class="btn-link" data-cover="<?= (int) $image['id'] ?>" data-category="<?= (int) $category['id'] ?>">Set cover</button>
             <a href="/admin/images/<?= (int) $image['id'] ?>/edit">Edit</a>
-            <form method="post" action="/admin/images/<?= (int) $image['id'] ?>/delete" onsubmit="return confirm('Delete image?')">
+            <form method="post" action="/admin/images/<?= (int) $image['id'] ?>/delete" onsubmit="return confirm('Delete image from all galleries?')">
                 <?= CSRF::field() ?>
                 <button type="submit" class="link-danger">Delete</button>
             </form>

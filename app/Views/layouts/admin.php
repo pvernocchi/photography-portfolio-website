@@ -22,6 +22,7 @@ $appName = (string) app_config('app.name', 'Vernocchi Photography');
         <nav>
             <a href="/admin/dashboard">Dashboard</a>
             <a href="/admin/categories">Categories</a>
+            <a href="/admin/images">Images</a>
             <a href="/admin/settings">Settings</a>
             <a href="/admin/settings/password">Password</a>
             <?php if (Auth::check() || Auth::hasPartialSession()): ?>
