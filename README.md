@@ -2,6 +2,12 @@
 
 A bilingual (Spanish/English) photography portfolio web application built with **plain PHP 8.1** — zero Composer dependencies, zero frameworks. Designed for Namecheap shared hosting with MySQL.
 
+## 🆕 Recent Updates
+
+- **PR #30**: Added duplicated-images filter in the Admin Image Library.
+- **PR #29**: Added admin image library filters and bulk category/gallery actions.
+- Added DB index `idx_images_original_filename` to speed up duplicate image filtering.
+
 ## ✨ Features
 
 ### 📸 Image Management
@@ -10,6 +16,9 @@ A bilingual (Spanish/English) photography portfolio web application built with *
 - Automatic thumbnail (400px) and display (1600px) image generation via GD library
 - EXIF data stripping for privacy protection
 - Drag-and-drop reordering of photos within categories
+- Image Library filters: all images, unassigned images, and duplicated images
+- Bulk actions: assign selected images to a gallery, remove from gallery, or delete from storage
+- Images can be assigned to multiple categories (many-to-many)
 - Flat category system with name (ES/EN), slug, and cover image
 
 ### 📧 Contact & Mail
@@ -184,9 +193,9 @@ vernocchi.es/
 │   │       └── theme-toggle.js     # Dark/light mode toggle
 │   └── uploads/                    # (placeholder directory)
 ├── storage/                        # ⚠️ OUTSIDE public root
-│   ├── originals/{category_id}/    # Full-size originals (never served)
-│   ├── thumbnails/{category_id}/   # 400px thumbnails
-│   └── display/{category_id}/      # 1600px display versions
+│   ├── originals/                  # Full-size originals (never served)
+│   ├── thumbnails/                 # 400px thumbnails
+│   └── display/                    # 1600px display versions
 ├── themes/
 │   ├── minimal-light/
 │   │   ├── theme.json
@@ -267,7 +276,7 @@ Import the full schema via phpMyAdmin or MySQL CLI:
 mysql -u your_user -p your_database < database/schema.sql
 ```
 
-This creates all tables (`users`, `remember_tokens`, `sessions`, `categories`, `images`, `settings`) and seeds default settings.
+This creates all tables (`users`, `remember_tokens`, `sessions`, `categories`, `images`, `image_category`, `settings`) and seeds default settings.
 
 > **Existing installations:** If upgrading, run `database/migration_smtp.sql` to add SMTP/contact mail settings.
 
@@ -346,7 +355,8 @@ The repository includes a workflow (`.github/workflows/deploy.yml`) that automat
 | `remember_tokens` | Secure "remember me" tokens (hashed, with expiry) |
 | `sessions` | Optional DB-backed sessions |
 | `categories` | Photography categories (bilingual names, slug, cover image, sort order, visibility) |
-| `images` | Photo metadata (filename, bilingual titles/alt text, dimensions, file size, sort order) |
+| `images` | Photo metadata (filename, original filename, bilingual titles/alt text, dimensions, file size) |
+| `image_category` | Many-to-many mapping between images and categories with per-category sort order |
 | `settings` | Key-value settings store (site title, theme, watermark config, analytics, SEO, mail driver, SMTP credentials, etc.) |
 
 ---
@@ -384,11 +394,16 @@ The repository includes a workflow (`.github/workflows/deploy.yml`) that automat
 | GET/POST | `/admin/categories/{id}/edit` `/admin/categories/{id}/update` | Edit category |
 | POST | `/admin/categories/{id}/delete` | Delete category |
 | POST | `/admin/categories/reorder` | Reorder categories (AJAX) |
+| GET | `/admin/images` | Image Library (all images) |
+| GET | `/admin/images/unassigned` | Filter images without any category |
+| GET | `/admin/images/duplicated` | Filter duplicated images by original filename |
+| GET/POST | `/admin/images/upload` | Upload images |
 | GET | `/admin/categories/{id}/images` | List images in category |
-| GET/POST | `/admin/categories/{id}/images/upload` | Upload images |
 | POST | `/admin/categories/{id}/images/reorder` | Reorder images (AJAX) |
 | POST | `/admin/categories/{id}/images/set-cover` | Set category cover (AJAX) |
 | POST | `/admin/images/import-ftp` | Import JPG files from `public/uploads` (batch) |
+| GET/POST | `/admin/images/assign` | Assign recent uploads/imports to categories |
+| POST | `/admin/images/bulk-action` | Bulk assign/remove/delete selected images |
 | GET/POST | `/admin/images/{id}/edit` `/admin/images/{id}/update` | Edit image metadata |
 | POST | `/admin/images/{id}/delete` | Delete image |
 | GET | `/admin/settings` | Settings (tabbed) |
@@ -410,9 +425,9 @@ Images are stored **outside the public directory** and served through PHP for ma
 
 ```
 storage/
-├── originals/{category_id}/     # Full-size originals (never served to visitors)
-├── thumbnails/{category_id}/    # 400px wide (gallery grid)
-└── display/{category_id}/       # 1600px max wide (lightbox view)
+├── originals/     # Full-size originals (never served to visitors)
+├── thumbnails/    # 400px wide (gallery grid)
+└── display/       # 1600px max wide (lightbox view)
 ```
 
 ---
