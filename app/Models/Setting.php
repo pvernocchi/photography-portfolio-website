@@ -17,7 +17,11 @@ class Setting
 
     public static function set(string $key, mixed $value): bool
     {
-        $statement = Database::instance()->pdo()->prepare('UPDATE settings SET setting_value = :setting_value WHERE setting_key = :setting_key');
+        $statement = Database::instance()->pdo()->prepare(
+            'INSERT INTO settings (setting_key, setting_value, setting_type, setting_group) 
+             VALUES (:setting_key, :setting_value, \'text\', \'general\')
+             ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value), updated_at = CURRENT_TIMESTAMP'
+        );
         $result = $statement->execute([
             ':setting_key' => $key,
             ':setting_value' => $value,

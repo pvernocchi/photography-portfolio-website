@@ -14,6 +14,8 @@ INSERT INTO settings (setting_key, setting_value, setting_type, setting_group) V
 ('site_description_en', '', 'textarea', 'general'),
 ('default_language', 'es', 'select', 'general'),
 ('contact_email', 'admin@vernocchi.es', 'text', 'general'),
+('turnstile_site_key', '', 'text', 'general'),
+('turnstile_secret_key', '', 'text', 'general'),
 ('active_theme', 'minimal-light', 'select', 'theme'),
 ('about_content_es', '<p>Placeholder about content in Spanish</p>', 'html', 'about'),
 ('about_content_en', '<p>Placeholder about content in English</p>', 'html', 'about'),

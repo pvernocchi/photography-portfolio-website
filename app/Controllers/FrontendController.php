@@ -77,7 +77,7 @@ class FrontendController extends Controller
         $siteTitle = (string) Setting::get('site_title', 'Vernocchi Photography');
         $contactEmail = (string) Setting::get('contact_email', '');
         $siteDescription = (string) Setting::get('site_description_' . $locale, '');
-        $turnstileSiteKey = trim((string) app_config('turnstile.site_key', ''));
+        $turnstileSiteKey = trim((string) Setting::get('turnstile_site_key', (string) app_config('turnstile.site_key', '')));
 
         $this->render('frontend/contact', [
             'title' => __('contact.title'),
@@ -110,7 +110,7 @@ class FrontendController extends Controller
             return;
         }
 
-        $turnstileSecretKey = trim((string) app_config('turnstile.secret_key', ''));
+        $turnstileSecretKey = trim((string) Setting::get('turnstile_secret_key', (string) app_config('turnstile.secret_key', '')));
         $turnstileToken = trim((string) ($_POST['cf-turnstile-response'] ?? ''));
         $remoteIp = (string) ($_SERVER['REMOTE_ADDR'] ?? '');
         if ($turnstileSecretKey !== '') {

@@ -50,7 +50,7 @@ All themes support automatic dark/light mode via `prefers-color-scheme` CSS medi
 - Translation files: `app/Languages/es.php`, `app/Languages/en.php`
 
 ### ⚙️ Admin Settings (Tabbed Interface)
-- **General**: Site title, descriptions (ES/EN), default language, contact email
+- **General**: Site title, descriptions (ES/EN), default language, contact email, Turnstile site/secret keys
 - **Theme**: Visual theme selector with preview
 - **About**: Rich text editor for About page content (ES/EN), profile photo upload
 - **Watermark**: Enable/disable, text, position, opacity, font size
