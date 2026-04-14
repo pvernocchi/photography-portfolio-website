@@ -19,11 +19,11 @@ $navCategories = \App\Models\Category::visible();
         <a href="/about"><?= e(__('nav.about')) ?></a>
         <a href="/contact"><?= e(__('nav.contact')) ?></a>
         <a href="/lang/es" class="lang-link">
-            <img src="/assets/img/flags/es.svg" class="flag-icon" aria-hidden="true" width="18" height="12">
+            <img src="/assets/img/flags/es.svg" class="flag-icon" alt="" width="18" height="12">
             ES
         </a>
         <a href="/lang/en" class="lang-link">
-            <img src="/assets/img/flags/gb.svg" class="flag-icon" aria-hidden="true" width="18" height="12">
+            <img src="/assets/img/flags/gb.svg" class="flag-icon" alt="" width="18" height="12">
             EN
         </a>
         <button class="theme-toggle" type="button" id="theme-toggle" aria-label="Switch to dark mode">🌙</button>
