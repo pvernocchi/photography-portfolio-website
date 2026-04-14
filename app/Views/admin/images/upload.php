@@ -88,14 +88,16 @@ use App\Core\CSRF;
                 const ctx = canvas.getContext('2d');
                 if (ctx) {
                     ctx.drawImage(source, 0, 0, thumbWidth, thumbHeight);
-                    resolve(canvas.toDataURL('image/jpeg', 0.8));
+                    resolve(canvas.toDataURL('image/png'));
                 } else {
+                    console.warn('Upload preview thumbnail skipped: unable to get canvas context.');
                     resolve('');
                 }
                 URL.revokeObjectURL(objectUrl);
             };
 
             source.onerror = () => {
+                console.warn('Upload preview thumbnail skipped: unable to read image file.');
                 URL.revokeObjectURL(objectUrl);
                 resolve('');
             };
