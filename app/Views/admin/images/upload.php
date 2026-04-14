@@ -48,24 +48,61 @@ use App\Core\CSRF;
 
     input.addEventListener('change', showPreviews);
 
-    function showPreviews() {
+    async function showPreviews() {
         preview.innerHTML = '';
         const files = input.files;
         if (!files || files.length === 0) return;
-        for (let i = 0; i < files.length; i++) {
-            const file = files[i];
-            if (!file.type.startsWith('image/')) continue;
+        for (const file of files) {
+            if (!file.type.startsWith('image/')) {
+                continue;
+            }
             const div = document.createElement('div');
             div.className = 'upload-thumb';
             const img = document.createElement('img');
-            img.src = URL.createObjectURL(file);
-            img.onload = img.onerror = () => URL.revokeObjectURL(img.src);
+            const thumbnailSrc = await createThumbnailDataUrl(file);
+            if (!thumbnailSrc) {
+                continue;
+            }
+            img.src = thumbnailSrc;
             const span = document.createElement('span');
             span.textContent = file.name;
             div.appendChild(img);
             div.appendChild(span);
             preview.appendChild(div);
         }
+    }
+
+    function createThumbnailDataUrl(file) {
+        return new Promise((resolve) => {
+            const objectUrl = URL.createObjectURL(file);
+            const source = new Image();
+
+            source.onload = () => {
+                const maxWidth = 120;
+                const maxHeight = 80;
+                const ratio = Math.min(maxWidth / source.width, maxHeight / source.height, 1);
+                const thumbWidth = Math.max(1, Math.round(source.width * ratio));
+                const thumbHeight = Math.max(1, Math.round(source.height * ratio));
+                const canvas = document.createElement('canvas');
+                canvas.width = thumbWidth;
+                canvas.height = thumbHeight;
+                const ctx = canvas.getContext('2d');
+                if (ctx) {
+                    ctx.drawImage(source, 0, 0, thumbWidth, thumbHeight);
+                    resolve(canvas.toDataURL('image/jpeg', 0.8));
+                } else {
+                    resolve(objectUrl);
+                }
+                URL.revokeObjectURL(objectUrl);
+            };
+
+            source.onerror = () => {
+                URL.revokeObjectURL(objectUrl);
+                resolve('');
+            };
+
+            source.src = objectUrl;
+        });
     }
 })();
 </script>
