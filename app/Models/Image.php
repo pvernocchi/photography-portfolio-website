@@ -32,6 +32,19 @@ class Image
         return Database::instance()->pdo()->query($sql)->fetchAll() ?: [];
     }
 
+    public static function duplicated(): array
+    {
+        $sql = 'SELECT i.* FROM images i
+                INNER JOIN (
+                    SELECT original_filename
+                    FROM images
+                    GROUP BY original_filename
+                    HAVING COUNT(*) > 1
+                ) dup ON dup.original_filename = i.original_filename
+                ORDER BY i.original_filename ASC, i.id DESC';
+        return Database::instance()->pdo()->query($sql)->fetchAll() ?: [];
+    }
+
     public static function find(int $id): ?array
     {
         $statement = Database::instance()->pdo()->prepare('SELECT * FROM images WHERE id = :id LIMIT 1');
