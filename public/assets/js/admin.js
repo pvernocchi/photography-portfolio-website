@@ -90,7 +90,7 @@ window.AdminBulkSelect = {
         }
       } else if (action === 'remove_from_category') {
         const categoryInput = form.querySelector('[name="category_id"]');
-        const hasCategory = !categoryInput || Number(categoryInput.value) > 0;
+        const hasCategory = categoryInput && Number(categoryInput.value) > 0;
         if (!hasCategory) {
           e.preventDefault();
           alert('Please select a gallery first.');

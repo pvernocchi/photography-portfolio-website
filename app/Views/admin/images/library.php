@@ -41,7 +41,7 @@ use App\Core\CSRF;
         <input type="hidden" name="return_to" value="/admin/images">
         <div class="bulk-bar-actions">
             <?php if (!empty($categories)): ?>
-            <select name="category_id" class="bulk-bar-select" aria-label="Gallery for remove action">
+            <select name="category_id" class="bulk-bar-select" aria-label="Select gallery to remove images from">
                 <option value="">Select gallery</option>
                 <?php foreach ($categories as $cat): ?>
                 <option value="<?= (int) $cat['id'] ?>"><?= e($cat['name_en']) ?></option>
