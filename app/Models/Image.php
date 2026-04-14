@@ -7,9 +7,18 @@ use App\Core\Database;
 
 class Image
 {
+    public static function all(): array
+    {
+        return Database::instance()->pdo()->query('SELECT * FROM images ORDER BY id DESC')->fetchAll() ?: [];
+    }
+
     public static function byCategory(int $categoryId): array
     {
-        $statement = Database::instance()->pdo()->prepare('SELECT * FROM images WHERE category_id = :category_id ORDER BY sort_order ASC, id DESC');
+        $sql = 'SELECT i.* FROM images i
+                INNER JOIN image_category ic ON ic.image_id = i.id
+                WHERE ic.category_id = :category_id
+                ORDER BY ic.sort_order ASC, i.id DESC';
+        $statement = Database::instance()->pdo()->prepare($sql);
         $statement->execute([':category_id' => $categoryId]);
         return $statement->fetchAll() ?: [];
     }
@@ -22,21 +31,22 @@ class Image
         return $row ?: null;
     }
 
-    public static function create(array $data): bool
+    public static function create(array $data): int
     {
-        $sql = 'INSERT INTO images (category_id, filename, original_filename, width, height, file_size, sort_order)
-                VALUES (:category_id, :filename, :original_filename, :width, :height, :file_size, :sort_order)';
-        $statement = Database::instance()->pdo()->prepare($sql);
+        $pdo = Database::instance()->pdo();
+        $sql = 'INSERT INTO images (filename, original_filename, width, height, file_size)
+                VALUES (:filename, :original_filename, :width, :height, :file_size)';
+        $statement = $pdo->prepare($sql);
 
-        return $statement->execute([
-            ':category_id' => $data['category_id'],
+        $statement->execute([
             ':filename' => $data['filename'],
             ':original_filename' => $data['original_filename'],
             ':width' => $data['width'],
             ':height' => $data['height'],
             ':file_size' => $data['file_size'],
-            ':sort_order' => (int) ($data['sort_order'] ?? 0),
         ]);
+
+        return (int) $pdo->lastInsertId();
     }
 
     public static function updateMeta(int $id, array $data): bool
@@ -62,15 +72,59 @@ class Image
     public static function reorder(int $categoryId, array $ids): void
     {
         $pdo = Database::instance()->pdo();
-        $statement = $pdo->prepare('UPDATE images SET sort_order = :sort_order WHERE id = :id AND category_id = :category_id');
+        $sql = 'UPDATE image_category SET sort_order = :sort_order WHERE image_id = :image_id AND category_id = :category_id';
+        $statement = $pdo->prepare($sql);
 
         foreach ($ids as $index => $id) {
             $statement->execute([
                 ':sort_order' => $index,
-                ':id' => (int) $id,
+                ':image_id' => (int) $id,
                 ':category_id' => $categoryId,
             ]);
         }
+    }
+
+    public static function assignCategories(int $imageId, array $categoryIds): void
+    {
+        $pdo = Database::instance()->pdo();
+
+        $pdo->prepare('DELETE FROM image_category WHERE image_id = :image_id')
+            ->execute([':image_id' => $imageId]);
+
+        $sql = 'INSERT INTO image_category (image_id, category_id, sort_order)
+                VALUES (:image_id, :category_id, :sort_order)';
+        $statement = $pdo->prepare($sql);
+
+        foreach ($categoryIds as $categoryId) {
+            $maxSort = $pdo->prepare('SELECT COALESCE(MAX(sort_order), 0) + 1 FROM image_category WHERE category_id = :cid');
+            $maxSort->execute([':cid' => (int) $categoryId]);
+            $nextSort = (int) $maxSort->fetchColumn();
+
+            $statement->execute([
+                ':image_id' => $imageId,
+                ':category_id' => (int) $categoryId,
+                ':sort_order' => $nextSort,
+            ]);
+        }
+    }
+
+    public static function categoriesForImage(int $imageId): array
+    {
+        $sql = 'SELECT c.* FROM categories c
+                INNER JOIN image_category ic ON ic.category_id = c.id
+                WHERE ic.image_id = :image_id
+                ORDER BY c.sort_order ASC';
+        $statement = Database::instance()->pdo()->prepare($sql);
+        $statement->execute([':image_id' => $imageId]);
+        return $statement->fetchAll() ?: [];
+    }
+
+    public static function categoryIdsForImage(int $imageId): array
+    {
+        $sql = 'SELECT category_id FROM image_category WHERE image_id = :image_id';
+        $statement = Database::instance()->pdo()->prepare($sql);
+        $statement->execute([':image_id' => $imageId]);
+        return array_column($statement->fetchAll() ?: [], 'category_id');
     }
 
     public static function countAll(): int

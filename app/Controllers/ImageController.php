@@ -12,6 +12,17 @@ use App\Models\Image;
 
 class ImageController extends Controller
 {
+    public function library(): void
+    {
+        $this->render('admin/images/library', [
+            'title' => 'Image Library',
+            'images' => Image::all(),
+            'categories' => Category::all(),
+            'success' => Session::flash('success'),
+            'error' => Session::flash('error'),
+        ]);
+    }
+
     public function index(string $id): void
     {
         $category = Category::find((int) $id);
@@ -29,33 +40,30 @@ class ImageController extends Controller
         ]);
     }
 
-    public function showUpload(string $id): void
+    public function showUpload(): void
     {
-        $category = Category::find((int) $id);
-        if ($category === null) {
-            $this->redirect('/admin/categories');
-        }
-
         $this->render('admin/images/upload', [
             'title' => 'Upload Images',
-            'category' => $category,
+            'categories' => Category::all(),
             'error' => Session::flash('error'),
         ]);
     }
 
-    public function upload(string $id): void
+    public function upload(): void
     {
         if (!CSRF::validate($_POST['csrf_token'] ?? null)) {
             Session::flash('error', 'Invalid security token.');
-            $this->redirect('/admin/categories/' . (int) $id . '/images/upload');
+            $this->redirect('/admin/images/upload');
         }
 
-        $categoryId = (int) $id;
         $files = $_FILES['images'] ?? null;
         if (!is_array($files) || !isset($files['name']) || !is_array($files['name'])) {
             Session::flash('error', 'Please select at least one JPG file.');
-            $this->redirect('/admin/categories/' . $categoryId . '/images/upload');
+            $this->redirect('/admin/images/upload');
         }
+
+        $categoryIds = array_map('intval', (array) ($_POST['categories'] ?? []));
+        $uploadedIds = [];
 
         foreach ($files['name'] as $index => $originalName) {
             $tmpFile = (string) ($files['tmp_name'][$index] ?? '');
@@ -73,22 +81,76 @@ class ImageController extends Controller
             $filename = $safeName . '-' . bin2hex(random_bytes(6)) . '.jpg';
 
             try {
-                $meta = ImageProcessor::processUpload($tmpFile, $filename, $categoryId);
-                Image::create([
-                    'category_id' => $categoryId,
+                $meta = ImageProcessor::processUpload($tmpFile, $filename);
+                $imageId = Image::create([
                     'filename' => $filename,
                     'original_filename' => (string) $originalName,
                     'width' => $meta['width'],
                     'height' => $meta['height'],
                     'file_size' => $meta['file_size'],
                 ]);
+
+                if ($imageId > 0 && $categoryIds !== []) {
+                    Image::assignCategories($imageId, $categoryIds);
+                }
+
+                $uploadedIds[] = $imageId;
             } catch (\Throwable) {
                 continue;
             }
         }
 
-        Session::flash('success', 'Upload completed.');
-        $this->redirect('/admin/categories/' . $categoryId . '/images');
+        if ($uploadedIds === []) {
+            Session::flash('error', 'No images were uploaded.');
+            $this->redirect('/admin/images/upload');
+        }
+
+        Session::put('last_uploaded_ids', $uploadedIds);
+        Session::flash('success', count($uploadedIds) . ' image(s) uploaded.');
+        $this->redirect('/admin/images/assign');
+    }
+
+    public function showAssign(): void
+    {
+        $uploadedIds = Session::get('last_uploaded_ids', []);
+        $images = [];
+        foreach ($uploadedIds as $id) {
+            $img = Image::find((int) $id);
+            if ($img !== null) {
+                $img['assigned_categories'] = Image::categoryIdsForImage((int) $id);
+                $images[] = $img;
+            }
+        }
+
+        $this->render('admin/images/assign', [
+            'title' => 'Assign Galleries',
+            'images' => $images,
+            'categories' => Category::all(),
+            'success' => Session::flash('success'),
+            'error' => Session::flash('error'),
+        ]);
+    }
+
+    public function saveAssign(): void
+    {
+        if (!CSRF::validate($_POST['csrf_token'] ?? null)) {
+            Session::flash('error', 'Invalid security token.');
+            $this->redirect('/admin/images/assign');
+        }
+
+        $assignments = (array) ($_POST['assignments'] ?? []);
+        foreach ($assignments as $imageId => $catIds) {
+            $imageId = (int) $imageId;
+            if (Image::find($imageId) === null) {
+                continue;
+            }
+            $catIds = array_map('intval', is_array($catIds) ? $catIds : []);
+            Image::assignCategories($imageId, $catIds);
+        }
+
+        Session::forget('last_uploaded_ids');
+        Session::flash('success', 'Gallery assignments saved.');
+        $this->redirect('/admin/images');
     }
 
     public function edit(string $id): void
@@ -96,12 +158,14 @@ class ImageController extends Controller
         $image = Image::find((int) $id);
         if ($image === null) {
             Session::flash('error', 'Image not found.');
-            $this->redirect('/admin/categories');
+            $this->redirect('/admin/images');
         }
 
         $this->render('admin/images/edit', [
             'title' => 'Edit Image',
             'image' => $image,
+            'categories' => Category::all(),
+            'assignedCategories' => Image::categoryIdsForImage((int) $id),
             'error' => Session::flash('error'),
         ]);
     }
@@ -116,7 +180,7 @@ class ImageController extends Controller
         $imageId = (int) $id;
         $image = Image::find($imageId);
         if ($image === null) {
-            $this->redirect('/admin/categories');
+            $this->redirect('/admin/images');
         }
 
         Image::updateMeta($imageId, [
@@ -126,27 +190,30 @@ class ImageController extends Controller
             'alt_en' => trim((string) ($_POST['alt_en'] ?? '')),
         ]);
 
-        Session::flash('success', 'Image metadata updated.');
-        $this->redirect('/admin/categories/' . (int) $image['category_id'] . '/images');
+        $categoryIds = array_map('intval', (array) ($_POST['categories'] ?? []));
+        Image::assignCategories($imageId, $categoryIds);
+
+        Session::flash('success', 'Image updated.');
+        $this->redirect('/admin/images');
     }
 
     public function delete(string $id): void
     {
         if (!CSRF::validate($_POST['csrf_token'] ?? null)) {
             Session::flash('error', 'Invalid security token.');
-            $this->redirect('/admin/categories');
+            $this->redirect('/admin/images');
         }
 
         $image = Image::find((int) $id);
         if ($image === null) {
-            $this->redirect('/admin/categories');
+            $this->redirect('/admin/images');
         }
 
-        ImageProcessor::deleteImages((string) $image['filename'], (int) $image['category_id']);
+        ImageProcessor::deleteImages((string) $image['filename']);
         Image::delete((int) $id);
 
         Session::flash('success', 'Image deleted.');
-        $this->redirect('/admin/categories/' . (int) $image['category_id'] . '/images');
+        $this->redirect('/admin/images');
     }
 
     public function reorder(string $id): void
@@ -182,7 +249,7 @@ class ImageController extends Controller
             echo json_encode(['ok' => false]);
             return;
         }
-        if ($image === null || (int) $image['category_id'] !== $categoryId) {
+        if ($image === null) {
             http_response_code(422);
             echo json_encode(['ok' => false]);
             return;

@@ -5,7 +5,7 @@ namespace App\Core;
 
 class ImageProcessor
 {
-    public static function processUpload(string $tmpFile, string $filename, int $categoryId): array
+    public static function processUpload(string $tmpFile, string $filename): array
     {
         $info = @getimagesize($tmpFile);
         if ($info === false || ($info['mime'] ?? '') !== 'image/jpeg') {
@@ -31,9 +31,9 @@ class ImageProcessor
         $height = (int) imagesy($source);
 
         $baseDirs = [
-            'originals' => BASE_PATH . '/storage/originals/' . $categoryId,
-            'thumbnails' => BASE_PATH . '/storage/thumbnails/' . $categoryId,
-            'display' => BASE_PATH . '/storage/display/' . $categoryId,
+            'originals' => BASE_PATH . '/storage/originals',
+            'thumbnails' => BASE_PATH . '/storage/thumbnails',
+            'display' => BASE_PATH . '/storage/display',
         ];
 
         foreach ($baseDirs as $dir) {
@@ -94,10 +94,10 @@ class ImageProcessor
         imagestring($image, 4, max(10, $width - 120), max(10, $height - 20), $text, $color);
     }
 
-    public static function deleteImages(string $filename, int $categoryId): void
+    public static function deleteImages(string $filename): void
     {
         foreach (['originals', 'thumbnails', 'display'] as $dir) {
-            $path = BASE_PATH . '/storage/' . $dir . '/' . $categoryId . '/' . $filename;
+            $path = BASE_PATH . '/storage/' . $dir . '/' . $filename;
             if (is_file($path)) {
                 unlink($path);
             }
