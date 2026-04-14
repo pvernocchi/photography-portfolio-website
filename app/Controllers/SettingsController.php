@@ -79,6 +79,13 @@ class SettingsController extends Controller
         $this->done('SEO settings updated.');
     }
 
+    public function updateSocial(): void
+    {
+        $this->guardCsrf('/admin/settings');
+        $this->saveMany(['social_instagram', 'social_facebook', 'social_twitter', 'social_linkedin', 'social_youtube', 'social_github'], 'social');
+        $this->done('Social network settings updated.');
+    }
+
     public function updateContact(): void
     {
         $this->guardCsrf('/admin/settings');

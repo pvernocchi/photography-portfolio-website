@@ -58,6 +58,16 @@ function e(mixed $value): string
     return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
 }
 
+function obfuscate_email(string $email): string
+{
+    $result = '';
+    $len = strlen($email);
+    for ($i = 0; $i < $len; $i++) {
+        $result .= '&#' . ord($email[$i]) . ';';
+    }
+    return $result;
+}
+
 function __(string $key, ?string $locale = null): string
 {
     return Language::translate($key, $locale);
