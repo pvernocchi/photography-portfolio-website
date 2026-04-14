@@ -80,6 +80,7 @@ $router->group('/admin', [], static function (Router $router): void {
         $router->post('/settings/watermark', [SettingsController::class, 'updateWatermark']);
         $router->post('/settings/analytics', [SettingsController::class, 'updateAnalytics']);
         $router->post('/settings/seo', [SettingsController::class, 'updateSeo']);
+        $router->post('/settings/social', [SettingsController::class, 'updateSocial']);
         $router->post('/settings/contact', [SettingsController::class, 'updateContact']);
 
         $router->get('/settings/password', [AuthController::class, 'showChangePassword']);

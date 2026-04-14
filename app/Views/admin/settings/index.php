@@ -22,6 +22,7 @@ $s = static fn (string $key, string $default = ''): string => (string) ($setting
     <button class="tab-btn" data-tab="watermark">Watermark</button>
     <button class="tab-btn" data-tab="analytics">Analytics</button>
     <button class="tab-btn" data-tab="seo">SEO</button>
+    <button class="tab-btn" data-tab="social">Social</button>
     <button class="tab-btn" data-tab="contact">Contact</button>
 </div>
 
@@ -151,6 +152,31 @@ $s = static fn (string $key, string $default = ''): string => (string) ($setting
         </label>
         <label>OG image path
             <input name="og_image" value="<?= e($s('og_image')) ?>">
+        </label>
+        <button class="btn btn-primary">Save</button>
+    </form>
+</section>
+
+<section class="tab-panel" data-panel="social">
+    <form class="card form-stack" method="post" action="/admin/settings/social">
+        <?= CSRF::field() ?>
+        <label>Instagram URL
+            <input name="social_instagram" type="url" value="<?= e($s('social_instagram')) ?>" placeholder="https://instagram.com/yourprofile">
+        </label>
+        <label>Facebook URL
+            <input name="social_facebook" type="url" value="<?= e($s('social_facebook')) ?>" placeholder="https://facebook.com/yourpage">
+        </label>
+        <label>Twitter / X URL
+            <input name="social_twitter" type="url" value="<?= e($s('social_twitter')) ?>" placeholder="https://x.com/yourhandle">
+        </label>
+        <label>LinkedIn URL
+            <input name="social_linkedin" type="url" value="<?= e($s('social_linkedin')) ?>" placeholder="https://linkedin.com/in/yourprofile">
+        </label>
+        <label>YouTube URL
+            <input name="social_youtube" type="url" value="<?= e($s('social_youtube')) ?>" placeholder="https://youtube.com/@yourchannel">
+        </label>
+        <label>GitHub URL
+            <input name="social_github" type="url" value="<?= e($s('social_github')) ?>" placeholder="https://github.com/yourprofile">
         </label>
         <button class="btn btn-primary">Save</button>
     </form>

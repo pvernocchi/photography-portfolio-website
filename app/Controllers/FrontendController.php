@@ -80,11 +80,29 @@ class FrontendController extends Controller
         $siteDescription = (string) Setting::get('site_description_' . $locale, '');
         $turnstileSiteKey = trim((string) Setting::get('turnstile_site_key', (string) app_config('turnstile.site_key', '')));
 
+        $socialNetworks = [];
+        $socialKeys = [
+            'instagram' => 'social_instagram',
+            'facebook'  => 'social_facebook',
+            'twitter'   => 'social_twitter',
+            'linkedin'  => 'social_linkedin',
+            'youtube'   => 'social_youtube',
+            'github'    => 'social_github',
+        ];
+        foreach ($socialKeys as $name => $key) {
+            $url = trim((string) Setting::get($key, ''));
+            if ($url !== '') {
+                $socialNetworks[$name] = $url;
+            }
+        }
+
         $this->render('frontend/contact', [
             'title' => __('contact.title'),
             'siteTitle' => $siteTitle,
             'contactEmail' => $contactEmail,
+            'contactEmailObfuscated' => $contactEmail !== '' ? obfuscate_email($contactEmail) : '',
             'siteDescription' => $siteDescription,
+            'socialNetworks' => $socialNetworks,
             'locale' => $locale,
             'theme' => ThemeEngine::activeTheme(),
             'metaDescription' => $this->metaDescription(),
