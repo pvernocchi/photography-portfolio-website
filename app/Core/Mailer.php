@@ -338,7 +338,7 @@ class Mailer
         }
 
         $logDir = dirname($logPath);
-        if (!is_dir($logDir) && !@mkdir($logDir, 0755, true) && !is_dir($logDir)) {
+        if (!is_dir($logDir) && !@mkdir($logDir, 0750, true) && !is_dir($logDir)) {
             return;
         }
 
@@ -377,7 +377,8 @@ class Mailer
         $singleLine = str_replace(["\r\n", "\r", "\n"], ' | ', trim($value));
         $collapsed = preg_replace('/\s+/', ' ', $singleLine);
         if ($collapsed === null) {
-            throw new \RuntimeException('Failed to sanitize SMTP debug log value.');
+            error_log('Mailer: PCRE processing failed while sanitizing SMTP debug log value.');
+            return $singleLine;
         }
 
         return $collapsed;
