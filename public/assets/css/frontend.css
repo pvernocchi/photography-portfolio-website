@@ -232,6 +232,20 @@ a:focus-visible {
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);
 }
+
+.lang-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.flag-icon {
+  width: 18px;
+  height: 12px;
+  border-radius: 2px;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.08);
+  flex: 0 0 auto;
+}
 /* ============================================
    MAIN CONTENT LAYOUT
    ============================================ */
