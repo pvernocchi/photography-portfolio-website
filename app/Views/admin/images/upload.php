@@ -27,6 +27,28 @@ use App\Core\CSRF;
     </fieldset>
     <button class="btn btn-primary" type="submit">Upload</button>
 </form>
+
+<form method="post" action="/admin/images/import-ftp" class="card form-stack mt-24">
+    <?= CSRF::field() ?>
+    <h2>Import JPGs uploaded via FTP</h2>
+    <p class="muted">Upload JPG files to <code>public/uploads</code> via FTP, then run this import (processed in batches of 100 files).</p>
+    <fieldset>
+        <legend>Assign to galleries on import (optional)</legend>
+        <div class="gallery-checkboxes">
+            <?php foreach ($categories as $cat): ?>
+            <label class="checkbox-row">
+                <input type="checkbox" name="categories[]" value="<?= (int) $cat['id'] ?>">
+                <?= e($cat['name_en']) ?>
+            </label>
+            <?php endforeach; ?>
+            <?php if (empty($categories)): ?>
+            <p class="muted">No galleries yet. <a href="/admin/categories/create">Create one</a></p>
+            <?php endif; ?>
+        </div>
+    </fieldset>
+    <button class="btn" type="submit">Import from FTP folder</button>
+</form>
+
 <script>
 (function() {
     const zone = document.getElementById('upload-zone');

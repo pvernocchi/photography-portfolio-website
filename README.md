@@ -6,6 +6,7 @@ A bilingual (Spanish/English) photography portfolio web application built with *
 
 ### 📸 Image Management
 - Upload JPG images up to 20MB through a secure admin interface
+- Import JPG images uploaded via FTP to `public/uploads` (batched import from admin)
 - Automatic thumbnail (400px) and display (1600px) image generation via GD library
 - EXIF data stripping for privacy protection
 - Drag-and-drop reordering of photos within categories
@@ -291,6 +292,8 @@ chmod -R 755 storage/
 chmod -R 755 public/uploads/
 ```
 
+For large batches that may time out in browser uploads, upload JPG files by FTP to `public/uploads` and use **Admin → Images → Upload → Import from FTP folder**. Imports are processed in batches of 100 files per run.
+
 ### 7. First Login
 
 1. Navigate to `https://yourdomain.com/admin/login`
@@ -385,6 +388,7 @@ The repository includes a workflow (`.github/workflows/deploy.yml`) that automat
 | GET/POST | `/admin/categories/{id}/images/upload` | Upload images |
 | POST | `/admin/categories/{id}/images/reorder` | Reorder images (AJAX) |
 | POST | `/admin/categories/{id}/images/set-cover` | Set category cover (AJAX) |
+| POST | `/admin/images/import-ftp` | Import JPG files from `public/uploads` (batch) |
 | GET/POST | `/admin/images/{id}/edit` `/admin/images/{id}/update` | Edit image metadata |
 | POST | `/admin/images/{id}/delete` | Delete image |
 | GET | `/admin/settings` | Settings (tabbed) |

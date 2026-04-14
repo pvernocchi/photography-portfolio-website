@@ -59,6 +59,7 @@ $router->group('/admin', [], static function (Router $router): void {
         $router->get('/images', [ImageController::class, 'library']);
         $router->get('/images/upload', [ImageController::class, 'showUpload']);
         $router->post('/images/upload', [ImageController::class, 'upload']);
+        $router->post('/images/import-ftp', [ImageController::class, 'importFromFtp']);
         $router->get('/images/assign', [ImageController::class, 'showAssign']);
         $router->post('/images/assign', [ImageController::class, 'saveAssign']);
         $router->get('/categories/{id}/images', [ImageController::class, 'index']);
