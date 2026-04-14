@@ -23,6 +23,15 @@ class Image
         return $statement->fetchAll() ?: [];
     }
 
+    public static function unassigned(): array
+    {
+        $sql = 'SELECT i.* FROM images i
+                LEFT JOIN image_category ic ON ic.image_id = i.id
+                WHERE ic.image_id IS NULL
+                ORDER BY i.id DESC';
+        return Database::instance()->pdo()->query($sql)->fetchAll() ?: [];
+    }
+
     public static function find(int $id): ?array
     {
         $statement = Database::instance()->pdo()->prepare('SELECT * FROM images WHERE id = :id LIMIT 1');
@@ -157,6 +166,54 @@ class Image
                 ':sort_order' => $sortMap[(int) $categoryId] ?? 0,
             ]);
         }
+    }
+
+    /** @param int[] $imageIds */
+    public static function addToCategory(int $categoryId, array $imageIds): int
+    {
+        if ($categoryId < 1 || $imageIds === []) {
+            return 0;
+        }
+
+        $validIds = array_map('intval', $imageIds);
+        $validIds = array_filter($validIds, static fn (int $id) => $id > 0);
+        $uniqueIds = array_unique($validIds);
+        $imageIds = array_values($uniqueIds);
+        if ($imageIds === []) {
+            return 0;
+        }
+        $imageIds = array_slice($imageIds, 0, 500);
+
+        $pdo = Database::instance()->pdo();
+        $placeholders = implode(',', array_fill(0, count($imageIds), '?'));
+        $existingStmt = $pdo->prepare(
+            "SELECT image_id FROM image_category WHERE category_id = ? AND image_id IN ($placeholders)"
+        );
+        $existingStmt->execute(array_merge([$categoryId], $imageIds));
+        $existingIds = array_flip(array_map('intval', array_column($existingStmt->fetchAll() ?: [], 'image_id')));
+
+        $maxSortStmt = $pdo->prepare('SELECT COALESCE(MAX(sort_order), 0) + 1 FROM image_category WHERE category_id = :category_id');
+        $maxSortStmt->execute([':category_id' => $categoryId]);
+        $nextSort = (int) ($maxSortStmt->fetchColumn() ?: 1);
+
+        $insertStmt = $pdo->prepare(
+            'INSERT INTO image_category (image_id, category_id, sort_order) VALUES (:image_id, :category_id, :sort_order)'
+        );
+
+        $assigned = 0;
+        foreach ($imageIds as $imageId) {
+            if (isset($existingIds[$imageId])) {
+                continue;
+            }
+            $insertStmt->execute([
+                ':image_id' => $imageId,
+                ':category_id' => $categoryId,
+                ':sort_order' => $nextSort++,
+            ]);
+            $assigned++;
+        }
+
+        return $assigned;
     }
 
     public static function categoriesForImage(int $imageId): array

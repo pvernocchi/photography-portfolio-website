@@ -3,7 +3,7 @@ declare(strict_types=1);
 use App\Core\CSRF;
 ?>
 <header class="page-header row-between">
-    <h1>Image Library</h1>
+    <h1><?= ($activeFilter ?? 'all') === 'unassigned' ? 'Images Without Category' : 'Image Library' ?></h1>
     <div class="row-between" style="gap:0.5rem">
         <button type="button" id="bulk-select-all" class="btn-link">Select all</button>
         <button type="button" id="bulk-select-none" class="btn-link" style="display:none">Deselect all</button>
@@ -12,8 +12,16 @@ use App\Core\CSRF;
 </header>
 <?php if (!empty($success)): ?><div class="alert alert-success"><?= e($success) ?></div><?php endif; ?>
 <?php if (!empty($error)): ?><div class="alert alert-error"><?= e($error) ?></div><?php endif; ?>
+<nav class="tabs">
+    <a class="tab-btn <?= ($activeFilter ?? 'all') === 'all' ? 'active' : '' ?>" href="/admin/images">All images</a>
+    <a class="tab-btn <?= ($activeFilter ?? 'all') === 'unassigned' ? 'active' : '' ?>" href="/admin/images/unassigned">Without category assigned</a>
+    <?php foreach ($categories as $cat): ?>
+        <?php if ((int) ($cat['images_count'] ?? 0) < 1) { continue; } ?>
+        <a class="tab-btn" href="/admin/categories/<?= (int) $cat['id'] ?>/images"><?= e($cat['name_en']) ?></a>
+    <?php endforeach; ?>
+</nav>
 <?php if (empty($images)): ?>
-<div class="card"><p>No images yet. <a href="/admin/images/upload">Upload your first photos</a></p></div>
+<div class="card"><p>No images for this view. <a href="/admin/images/upload">Upload your first photos</a></p></div>
 <?php else: ?>
 <div class="image-grid" id="bulk-grid">
     <?php foreach ($images as $image): ?>
@@ -38,15 +46,22 @@ use App\Core\CSRF;
     <span class="bulk-bar-count" id="bulk-count"></span>
     <form method="post" action="/admin/images/bulk-action" id="bulk-form">
         <?= CSRF::field() ?>
-        <input type="hidden" name="return_to" value="/admin/images">
+        <input type="hidden" name="return_to" value="<?= e((string) ($returnTo ?? '/admin/images')) ?>">
         <div class="bulk-bar-actions">
             <?php if (!empty($categories)): ?>
+            <select name="assign_category_id" class="bulk-bar-select" aria-label="Select gallery to assign images to">
+                <option value="">Assign to gallery</option>
+                <?php foreach ($categories as $cat): ?>
+                <option value="<?= (int) $cat['id'] ?>"><?= e($cat['name_en']) ?></option>
+                <?php endforeach; ?>
+            </select>
             <select name="category_id" class="bulk-bar-select" aria-label="Select gallery to remove images from">
                 <option value="">Select gallery</option>
                 <?php foreach ($categories as $cat): ?>
                 <option value="<?= (int) $cat['id'] ?>"><?= e($cat['name_en']) ?></option>
                 <?php endforeach; ?>
             </select>
+            <button type="submit" name="action" value="assign_to_category" class="btn bulk-bar-btn bulk-bar-btn-outline">Assign to gallery</button>
             <button type="submit" name="action" value="remove_from_category" class="btn bulk-bar-btn bulk-bar-btn-outline">Remove from gallery</button>
             <?php endif; ?>
             <button type="submit" name="action" value="delete" class="btn btn-danger bulk-bar-btn">Remove and delete from storage</button>

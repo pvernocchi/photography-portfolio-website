@@ -88,6 +88,17 @@ window.AdminBulkSelect = {
         if (!confirm('Permanently delete ' + plural(checked.length, 'image') + '? This cannot be undone.')) {
           e.preventDefault();
         }
+      } else if (action === 'assign_to_category') {
+        const assignInput = form.querySelector('[name="assign_category_id"]') || form.querySelector('[name="category_id"]');
+        const hasCategory = assignInput && Number(assignInput.value) > 0;
+        if (!hasCategory) {
+          e.preventDefault();
+          alert('Please select a gallery first.');
+          return;
+        }
+        if (!confirm('Assign ' + plural(checked.length, 'image') + ' to the selected gallery?')) {
+          e.preventDefault();
+        }
       } else if (action === 'remove_from_category') {
         const categoryInput = form.querySelector('[name="category_id"]');
         const hasCategory = categoryInput && Number(categoryInput.value) > 0;

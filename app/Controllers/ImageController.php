@@ -14,10 +14,27 @@ class ImageController extends Controller
 {
     public function library(): void
     {
+        $categories = Category::all();
         $this->render('admin/images/library', [
             'title' => 'Image Library',
             'images' => Image::all(),
-            'categories' => Category::all(),
+            'categories' => $categories,
+            'activeFilter' => 'all',
+            'returnTo' => '/admin/images',
+            'success' => Session::flash('success'),
+            'error' => Session::flash('error'),
+        ]);
+    }
+
+    public function unassigned(): void
+    {
+        $categories = Category::all();
+        $this->render('admin/images/library', [
+            'title' => 'Images Without Category',
+            'images' => Image::unassigned(),
+            'categories' => $categories,
+            'activeFilter' => 'unassigned',
+            'returnTo' => '/admin/images/unassigned',
             'success' => Session::flash('success'),
             'error' => Session::flash('error'),
         ]);
@@ -35,6 +52,7 @@ class ImageController extends Controller
             'title' => 'Images',
             'category' => $category,
             'images' => Image::byCategory((int) $id),
+            'categories' => Category::all(),
             'success' => Session::flash('success'),
             'error' => Session::flash('error'),
         ]);
@@ -309,7 +327,9 @@ class ImageController extends Controller
 
         // Allow only known safe admin return paths (no traversal, no query strings).
         $allowedPaths = ['/admin/images'];
+        $allowedPaths[] = '/admin/images/unassigned';
         $categoryId = (int) ($_POST['category_id'] ?? 0);
+        $assignCategoryId = (int) ($_POST['assign_category_id'] ?? $_POST['category_id'] ?? 0);
         if ($categoryId > 0) {
             $allowedPaths[] = '/admin/categories/' . $categoryId . '/images';
         }
@@ -329,8 +349,15 @@ class ImageController extends Controller
             }
             Image::deleteMany($ids);
             Session::flash('success', count($images) . ' image(s) deleted.');
+        } elseif ($action === 'assign_to_category') {
+            if ($assignCategoryId < 1 || Category::find($assignCategoryId) === null) {
+                Session::flash('error', 'Please select a valid gallery.');
+                $this->redirect($returnTo);
+            }
+            $assigned = Image::addToCategory($assignCategoryId, $ids);
+            Session::flash('success', $assigned . ' image(s) assigned to gallery.');
         } elseif ($action === 'remove_from_category') {
-            if ($categoryId < 1) {
+            if ($categoryId < 1 || Category::find($categoryId) === null) {
                 Session::flash('error', 'Invalid category.');
                 $this->redirect($returnTo);
             }
