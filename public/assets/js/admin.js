@@ -4,6 +4,104 @@ window.VernocchiAdmin = {
   csrfToken: document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
 };
 
+window.AdminBulkSelect = {
+  init(gridSel, formSel, barSel, countSel, idsSel, selectAllSel, selectNoneSel) {
+    const grid = document.querySelector(gridSel);
+    const form = document.querySelector(formSel);
+    const bar = document.querySelector(barSel);
+    const countEl = document.querySelector(countSel);
+    const idsContainer = document.querySelector(idsSel);
+    const selectAllBtn = document.querySelector(selectAllSel);
+    const selectNoneBtn = document.querySelector(selectNoneSel);
+    if (!grid || !form || !bar) return;
+
+    function getCheckboxes() {
+      return [...grid.querySelectorAll('.image-card-checkbox')];
+    }
+
+    function plural(n, word) {
+      return n + ' ' + word + (n !== 1 ? 's' : '');
+    }
+
+    function updateBar() {
+      const checked = grid.querySelectorAll('.image-card-checkbox:checked');
+      const count = checked.length;
+      bar.hidden = count === 0;
+      if (countEl) countEl.textContent = plural(count, 'image') + ' selected';
+      if (selectNoneBtn) selectNoneBtn.style.display = count > 0 ? '' : 'none';
+
+      if (idsContainer) {
+        idsContainer.innerHTML = '';
+        checked.forEach((cb) => {
+          const input = document.createElement('input');
+          input.type = 'hidden';
+          input.name = 'ids[]';
+          input.value = cb.value;
+          idsContainer.appendChild(input);
+        });
+      }
+    }
+
+    grid.addEventListener('change', (e) => {
+      const cb = e.target.closest('.image-card-checkbox');
+      if (!cb) return;
+      cb.closest('.image-card')?.classList.toggle('image-card--selected', cb.checked);
+      updateBar();
+    });
+
+    // Prevent drag from starting when clicking the checkbox label
+    grid.addEventListener('dragstart', (e) => {
+      if (e.target.closest('.image-card-select')) {
+        e.preventDefault();
+      }
+    });
+
+    if (selectAllBtn) {
+      selectAllBtn.addEventListener('click', () => {
+        getCheckboxes().forEach((cb) => {
+          cb.checked = true;
+          cb.closest('.image-card')?.classList.add('image-card--selected');
+        });
+        updateBar();
+      });
+    }
+
+    if (selectNoneBtn) {
+      selectNoneBtn.addEventListener('click', () => {
+        getCheckboxes().forEach((cb) => {
+          cb.checked = false;
+          cb.closest('.image-card')?.classList.remove('image-card--selected');
+        });
+        updateBar();
+      });
+    }
+
+    form.addEventListener('submit', (e) => {
+      const checked = grid.querySelectorAll('.image-card-checkbox:checked');
+      if (checked.length === 0) {
+        e.preventDefault();
+        return;
+      }
+      // e.submitter is supported in all modern browsers; fall back to data attribute set on click.
+      const action = e.submitter?.value || form.dataset.pendingAction || '';
+      if (action === 'delete') {
+        if (!confirm('Permanently delete ' + plural(checked.length, 'image') + '? This cannot be undone.')) {
+          e.preventDefault();
+        }
+      } else if (action === 'remove_from_category') {
+        if (!confirm('Remove ' + plural(checked.length, 'image') + ' from this gallery?')) {
+          e.preventDefault();
+        }
+      }
+    });
+
+    // Track which submit button was clicked as a reliable fallback for e.submitter.
+    form.querySelectorAll('[type="submit"]').forEach((btn) => {
+      btn.addEventListener('click', () => { form.dataset.pendingAction = btn.value; });
+    });
+  }
+};
+
 window.AdminReorder = {
   bind(selector, endpoint) {
     const container = document.querySelector(selector);
