@@ -24,6 +24,7 @@ $gaId = trim((string) ($gaId ?? ''));
     <meta property="og:locale" content="<?= e($locale === 'es' ? 'es_ES' : 'en_GB') ?>">
     <meta name="twitter:card" content="summary_large_image">
     <link rel="canonical" href="<?= e($canonical) ?>">
+    <link rel="icon" type="image/svg+xml" href="https://www.vernocchi.es/Shutter-Icon-2.svg">
     <link rel="stylesheet" href="/assets/css/frontend.css">
     <link rel="stylesheet" href="/theme/style.css">
     <link rel="stylesheet" href="/theme/dark.css">

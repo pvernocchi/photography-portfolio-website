@@ -39,10 +39,19 @@ use App\Core\CSRF;
     <form method="post" action="/admin/images/bulk-action" id="bulk-form">
         <?= CSRF::field() ?>
         <input type="hidden" name="return_to" value="/admin/images">
-        <div id="bulk-ids"></div>
         <div class="bulk-bar-actions">
-            <button type="submit" name="action" value="delete" class="btn btn-danger bulk-bar-btn">Delete selected</button>
+            <?php if (!empty($categories)): ?>
+            <select name="category_id" class="bulk-bar-select" aria-label="Gallery for remove action">
+                <option value="">Select gallery</option>
+                <?php foreach ($categories as $cat): ?>
+                <option value="<?= (int) $cat['id'] ?>"><?= e($cat['name_en']) ?></option>
+                <?php endforeach; ?>
+            </select>
+            <button type="submit" name="action" value="remove_from_category" class="btn bulk-bar-btn bulk-bar-btn-outline">Remove from gallery</button>
+            <?php endif; ?>
+            <button type="submit" name="action" value="delete" class="btn btn-danger bulk-bar-btn">Remove and delete from storage</button>
         </div>
+        <div id="bulk-ids"></div>
     </form>
 </div>
 <script>
