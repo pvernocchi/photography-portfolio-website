@@ -39,7 +39,7 @@ class Session
             $_SESSION['last_activity'] = $now;
         }
 
-        $ip = $_SERVER['REMOTE_ADDR'] ?? '';
+        $ip = $_SERVER['HTTP_CF_CONNECTING_IP'] ?? $_SERVER['REMOTE_ADDR'] ?? '';
         $ua = $_SERVER['HTTP_USER_AGENT'] ?? '';
 
         if (!isset($_SESSION['ip_address'])) {
