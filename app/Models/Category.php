@@ -9,10 +9,10 @@ class Category
 {
     public static function all(): array
     {
-        $sql = 'SELECT c.*, i.filename AS cover_filename, COUNT(img.id) AS images_count
+        $sql = 'SELECT c.*, i.filename AS cover_filename, COUNT(ic.image_id) AS images_count
                 FROM categories c
                 LEFT JOIN images i ON i.id = c.cover_image_id
-                LEFT JOIN images img ON img.category_id = c.id
+                LEFT JOIN image_category ic ON ic.category_id = c.id
                 GROUP BY c.id
                 ORDER BY c.sort_order ASC, c.id DESC';
         return Database::instance()->pdo()->query($sql)->fetchAll() ?: [];

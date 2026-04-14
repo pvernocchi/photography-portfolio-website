@@ -56,9 +56,12 @@ $router->group('/admin', [], static function (Router $router): void {
         $router->post('/categories/{id}/delete', [CategoryController::class, 'delete']);
         $router->post('/categories/reorder', [CategoryController::class, 'reorder']);
 
+        $router->get('/images', [ImageController::class, 'library']);
+        $router->get('/images/upload', [ImageController::class, 'showUpload']);
+        $router->post('/images/upload', [ImageController::class, 'upload']);
+        $router->get('/images/assign', [ImageController::class, 'showAssign']);
+        $router->post('/images/assign', [ImageController::class, 'saveAssign']);
         $router->get('/categories/{id}/images', [ImageController::class, 'index']);
-        $router->get('/categories/{id}/images/upload', [ImageController::class, 'showUpload']);
-        $router->post('/categories/{id}/images/upload', [ImageController::class, 'upload']);
         $router->post('/categories/{id}/images/reorder', [ImageController::class, 'reorder']);
         $router->post('/categories/{id}/images/set-cover', [ImageController::class, 'setCover']);
         $router->get('/images/{id}/edit', [ImageController::class, 'edit']);

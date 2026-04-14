@@ -100,7 +100,11 @@ class CategoryController extends Controller
 
         $categoryId = (int) $id;
         foreach (Image::byCategory($categoryId) as $image) {
-            ImageProcessor::deleteImages((string) $image['filename'], $categoryId);
+            $cats = Image::categoryIdsForImage((int) $image['id']);
+            if (count($cats) === 1 && (int) $cats[0] === $categoryId) {
+                ImageProcessor::deleteImages((string) $image['filename']);
+                Image::delete((int) $image['id']);
+            }
         }
 
         Category::delete($categoryId);

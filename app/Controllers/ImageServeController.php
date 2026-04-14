@@ -38,7 +38,7 @@ class ImageServeController extends Controller
             return;
         }
 
-        $path = BASE_PATH . '/storage/' . $folder . '/' . (int) $image['category_id'] . '/' . $image['filename'];
+        $path = BASE_PATH . '/storage/' . $folder . '/' . $image['filename'];
         if (!is_file($path)) {
             http_response_code(404);
             return;
