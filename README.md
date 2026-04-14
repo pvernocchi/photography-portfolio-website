@@ -27,6 +27,7 @@ A bilingual (Spanish/English) photography portfolio web application built with *
 - Configurable mail driver: PHP `mail()` or SMTP
 - Full SMTP support with AUTH LOGIN, TLS/SSL encryption
 - SMTP credentials encrypted at rest via AES-256-GCM
+- SMTP debug logging to `storage/logs/smtp-debug.log` (or custom path via config)
 - Customizable sender name and email address
 - Contact email address obfuscated in HTML to deter scrapers
 - Social network links (Instagram, Facebook, Twitter/X, LinkedIn, YouTube, GitHub) displayed on the Contact page
@@ -269,6 +270,10 @@ return [
     'turnstile' => [
         'site_key' => '',
         'secret_key' => '',
+    ],
+    'mail' => [
+        // SMTP debug logs are written here. Leave empty to use storage/logs/smtp-debug.log
+        'smtp_debug_log' => '',
     ],
 ];
 ```
