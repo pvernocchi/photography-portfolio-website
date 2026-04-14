@@ -7,13 +7,17 @@ use App\Models\Setting;
 
 class Mailer
 {
+    private const SOCKET_TIMEOUT = 10;
+    private const SMTP_LINE_BUFFER = 515; // 512 + CRLF + continuation safety
+
     public static function send(string $to, string $subject, string $body, string $replyTo = ''): bool
     {
         $smtpHost = trim((string) Setting::get('smtp_host', ''));
         $smtpPort = (int) trim((string) Setting::get('smtp_port', '587'));
         $smtpEncryption = trim((string) Setting::get('smtp_encryption', 'tls'));
         $smtpUsername = trim((string) Setting::get('smtp_username', ''));
-        $smtpPassword = Encryption::decrypt((string) Setting::get('smtp_password', ''));
+        $smtpPasswordEncrypted = (string) Setting::get('smtp_password', '');
+        $smtpPassword = Encryption::decrypt($smtpPasswordEncrypted);
 
         $fromName = trim((string) Setting::get('smtp_from_name', ''));
         if ($fromName === '') {
@@ -27,6 +31,11 @@ class Mailer
 
         if ($smtpHost === '') {
             return self::sendWithMail($to, $subject, $body, $replyTo, $fromName, $fromEmail);
+        }
+
+        if ($smtpPasswordEncrypted !== '' && $smtpPassword === '') {
+            error_log('Mailer: SMTP password decryption failed.');
+            return false;
         }
 
         if ($smtpPort <= 0) {
@@ -56,7 +65,7 @@ class Mailer
         string $fromName,
         string $fromEmail
     ): bool {
-        $safeSubject = self::cleanHeader('' . $subject);
+        $safeSubject = self::cleanHeader($subject);
         $safeFromName = self::cleanHeader($fromName);
         $safeFromEmail = self::cleanHeader($fromEmail);
         $safeReplyTo = self::cleanHeader($replyTo);
@@ -99,7 +108,7 @@ class Mailer
             $transport . ':' . $port,
             $errno,
             $errstr,
-            10,
+            self::SOCKET_TIMEOUT,
             STREAM_CLIENT_CONNECT
         );
 
@@ -108,7 +117,7 @@ class Mailer
             return false;
         }
 
-        stream_set_timeout($socket, 10);
+        stream_set_timeout($socket, self::SOCKET_TIMEOUT);
 
         if (!self::expectCode($socket, [220])) {
             fclose($socket);
@@ -202,12 +211,18 @@ class Mailer
         return true;
     }
 
+    /**
+     * @param resource $socket
+     */
     private static function sendCommand($socket, string $command, array $expectedCodes): bool
     {
         fwrite($socket, $command . "\r\n");
         return self::expectCode($socket, $expectedCodes, $command);
     }
 
+    /**
+     * @param resource $socket
+     */
     private static function expectCode($socket, array $expectedCodes, string $context = ''): bool
     {
         $response = self::readResponse($socket);
@@ -225,10 +240,13 @@ class Mailer
         return true;
     }
 
+    /**
+     * @param resource $socket
+     */
     private static function readResponse($socket): string
     {
         $response = '';
-        while (($line = fgets($socket, 515)) !== false) {
+        while (($line = fgets($socket, self::SMTP_LINE_BUFFER)) !== false) {
             $response .= $line;
             if (strlen($line) < 4 || $line[3] !== '-') {
                 break;
@@ -247,6 +265,10 @@ class Mailer
     {
         $normalized = str_replace(["\r\n", "\r"], "\n", $body);
         $dotStuffed = preg_replace('/^\./m', '..', $normalized);
-        return str_replace("\n", "\r\n", (string) $dotStuffed);
+        if ($dotStuffed === null) {
+            $dotStuffed = $normalized;
+        }
+
+        return str_replace("\n", "\r\n", $dotStuffed);
     }
 }
