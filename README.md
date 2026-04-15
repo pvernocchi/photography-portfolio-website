@@ -2,6 +2,8 @@
 
 A self-hosted photography portfolio built from the ground up with PHP 8.1. No frameworks, no Composer, no npm — just clean, dependency-free code designed to run on standard shared hosting with MySQL.
 
+You can view this project live at my own [Portfolio website](https://www.vernocchi.es).
+
 ---
 
 ## Overview
