@@ -4,6 +4,8 @@ A self-hosted photography portfolio built from the ground up with PHP 8.1. No fr
 
 ---
 
+[![Download](https://img.shields.io/github/downloads/pvernocchi/photography-portfolio-website/total)](https://github.com/pvernocchi/photography-portfolio-website/releases)
+
 ## Overview
 
 This application gives photographers a complete, self-contained website with a public-facing portfolio and a private admin panel. It supports two languages (Spanish and English), three visual themes, and includes aggressive image-protection measures to discourage unauthorized downloading. A browser-based setup wizard handles first-time installation so you never need to touch config files or run CLI commands.
