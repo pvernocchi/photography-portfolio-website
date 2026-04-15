@@ -4,6 +4,7 @@ A bilingual (Spanish/English) photography portfolio web application built with *
 
 ## 🆕 Recent Updates
 
+- **Setup Wizard**: Added a guided first-time installation wizard (`/install.php`) — no more manual config editing or CLI scripts. Detects existing installations automatically and locks itself after setup.
 - **PR #34**: Added social network links to the Contact page and obfuscated the contact email address against scrapers.
 - **PR #30**: Added duplicated-images filter in the Admin Image Library.
 - **PR #29**: Added admin image library filters and bulk category/gallery actions.
@@ -180,7 +181,8 @@ vernocchi.es/
 │   └── seed_admin.php              # Create default admin user
 ├── public/                         # ← Apache document root
 │   ├── .htaccess                   # URL rewriting to index.php
-│   ├── index.php                   # Front controller (all routes)
+│   ├── index.php                   # Front controller + installation guard
+│   ├── install.php                 # First-time setup wizard (self-locks after setup)
 │   ├── assets/
 │   │   ├── css/
 │   │   │   ├── admin.css           # Admin panel styles
@@ -201,7 +203,8 @@ vernocchi.es/
 ├── storage/                        # ⚠️ OUTSIDE public root
 │   ├── originals/                  # Full-size originals (never served)
 │   ├── thumbnails/                 # 400px thumbnails
-│   └── display/                    # 1600px display versions
+│   ├── display/                    # 1600px display versions
+│   └── installed.lock              # Created by wizard after setup; locks the installer
 ├── themes/
 │   ├── minimal-light/
 │   │   ├── theme.json
@@ -230,79 +233,11 @@ vernocchi.es/
 
 Upload the entire project to your hosting via FTP (or use GitHub Actions — see below).
 
-### 2. Configure Database
-
-Copy the example config and edit with your credentials:
-
-```bash
-cp config/config.example.php config/config.php
-```
-
-Edit `config/config.php`:
-
-```php
-return [
-    'app' => [
-        'name' => 'Vernocchi Photography',
-        'url' => 'https://vernocchi.es',
-        'debug' => false,
-        'default_language' => 'es',
-        'key' => '', // Set a random 32-character string for encryption
-    ],
-    'database' => [
-        'host' => 'localhost',
-        'name' => 'your_database_name',
-        'user' => 'your_database_user',
-        'pass' => 'your_database_password',
-        'charset' => 'utf8mb4',
-    ],
-    'session' => [
-        'name' => 'vernocchi_session',
-        'lifetime' => 1800,
-        'remember_days' => 30,
-    ],
-    'totp' => [
-        'issuer' => 'Vernocchi Photography',
-        'digits' => 6,
-        'period' => 30,
-        'algorithm' => 'sha1',
-    ],
-    'turnstile' => [
-        'site_key' => '',
-        'secret_key' => '',
-    ],
-    'mail' => [
-        // SMTP debug logs are written here. Leave empty to use storage/logs/smtp-debug.log
-        'smtp_debug_log' => '',
-    ],
-];
-```
-
-### 3. Import Database
-
-Import the full schema via phpMyAdmin or MySQL CLI:
-
-```bash
-mysql -u your_user -p your_database < database/schema.sql
-```
-
-This creates all tables (`users`, `remember_tokens`, `sessions`, `categories`, `images`, `image_category`, `settings`) and seeds default settings.
-
-> **Existing installations:** If upgrading, run `database/migration_smtp.sql` to add SMTP/contact mail settings, and `database/migration_social_networks.sql` to add social network settings.
-
-### 4. Seed Admin Account
-
-```bash
-php database/seed_admin.php
-```
-
-This creates the default admin user. If an admin already exists, it will be skipped (safe to re-run).
-
-### 5. Set Document Root
+### 2. Set Document Root
 
 Point Apache's document root to the `public/` directory. On Namecheap shared hosting, this is typically configured in cPanel.
 
-### 6. Set Directory Permissions
+### 3. Set Directory Permissions
 
 Ensure storage directories are writable:
 
@@ -311,16 +246,33 @@ chmod -R 755 storage/
 chmod -R 755 public/uploads/
 ```
 
-For large batches that may time out in browser uploads, upload JPG files by FTP to `public/uploads` and use **Admin → Images → Upload → Import from FTP folder**. Imports are processed in batches of 100 files per run.
+### 4. Run the Setup Wizard
 
-### 7. First Login
+Visit your site in a browser — `public/index.php` automatically detects that the app is not yet configured and redirects to `/install.php`.
+
+The wizard guides you through six steps:
+
+| Step | What it does |
+|---|---|
+| **1 – Requirements** | Checks PHP ≥ 8.1, required extensions (PDO, PDO_MySQL, GD/Imagick, mbstring, openssl), and that `storage/` and `config/` are writable |
+| **2 – Database** | Enter your MySQL credentials; the wizard tests the connection before proceeding |
+| **3 – DB Setup** | Runs `database/schema.sql` automatically; existing tables are skipped safely |
+| **4 – Admin Account** | Create the administrator username, email, and password |
+| **5 – Configuration** | Set the site name, URL, default language, and auto-generate the encryption key; writes `config/config.php` |
+| **6 – Complete** | Links you directly to `/admin/login`; creates `storage/installed.lock` so the wizard can never run again |
+
+> **Existing installations:** If the wizard detects that `config/config.php` exists, the database is reachable, and at least one admin user is present, it automatically stamps `storage/installed.lock` and redirects to `/`. No data is ever overwritten by accident.
+
+> **Manual alternative:** You can still configure the app by hand — copy `config/config.example.php` to `config/config.php`, edit it with your credentials, import `database/schema.sql`, and run `php database/seed_admin.php`. Then create `storage/installed.lock` yourself to suppress the wizard.
+
+### 5. First Login
 
 1. Navigate to `https://yourdomain.com/admin/login`
-2. Log in with default credentials:
-   - **Username**: `admin`
-   - **Password**: `changeme`
+2. Log in with the credentials you chose in the wizard
 3. **⚠️ You will be prompted to set up MFA** — scan the QR code with Microsoft Authenticator
-4. After MFA setup, go to **Settings → Password** and change the default password immediately
+4. After MFA setup, configure site settings, theme, and mail driver via **Admin → Settings**
+
+For large batches that may time out in browser uploads, upload JPG files by FTP to `public/uploads` and use **Admin → Images → Upload → Import from FTP folder**. Imports are processed in batches of 100 files per run.
 
 ---
 
@@ -330,9 +282,8 @@ For large batches that may time out in browser uploads, upload JPG files by FTP 
 
 1. Connect to your Namecheap FTP server
 2. Upload all project files maintaining the directory structure
-3. Ensure `config/config.php` exists with correct credentials
-4. Import `database/schema.sql` if first deployment
-5. Verify `storage/` directories are writable
+3. Verify `storage/` directories are writable
+4. Visit your site — the setup wizard runs automatically on first load
 
 ### GitHub Actions Auto-Deploy
 
@@ -377,6 +328,7 @@ The repository includes a workflow (`.github/workflows/deploy.yml`) that automat
 
 | Method | Route | Description |
 |---|---|---|
+| GET | `/install.php` | First-time setup wizard (locked after setup) |
 | GET | `/` | Homepage |
 | GET | `/gallery` | All categories |
 | GET | `/gallery/{slug}` | Images in a category |
@@ -447,7 +399,8 @@ storage/
 
 - **Zero external dependencies** — no Composer, no npm, no frameworks
 - **Custom PSR-4 autoloader** via `spl_autoload_register()` in `app/bootstrap.php`
-- **Front controller pattern** — all requests route through `public/index.php`
+- **Front controller pattern** — all requests route through `public/index.php`; an IIFE guard at the top redirects to `/install.php` when the app is not yet configured
+- **Setup wizard** — `public/install.php` is a fully standalone script (no dependency on the main app framework); locked permanently after first setup via `storage/installed.lock`
 - **MVC structure** — Controllers, Models, Views cleanly separated
 - **`declare(strict_types=1)`** on all PHP files
 - **All vanilla JavaScript** — no jQuery, no frontend frameworks
@@ -462,18 +415,18 @@ storage/
 
 - [ ] Upload files via FTP or configure GitHub Actions
 - [ ] Create MySQL database via Namecheap cPanel
-- [ ] Import `database/schema.sql`
-- [ ] Configure `config/config.php` with database credentials
-- [ ] Set a random 32-character `app.key` in `config/config.php` (used for encryption)
 - [ ] Set Apache document root to `public/`
-- [ ] Verify `storage/` directories are writable (`chmod 755`)
-- [ ] Run `php database/seed_admin.php`
-- [ ] Log in at `/admin/login` (admin / changeme)
-- [ ] Set up MFA with Microsoft Authenticator
-- [ ] Change default password in Settings → Password
-- [ ] Configure site settings (title, theme, contact email, analytics)
-- [ ] Configure mail settings (PHP mail or SMTP) in Settings → Contact
-- [ ] Configure social network profile URLs in Settings → Social (optional)
+- [ ] Set `storage/` and `public/uploads/` to writable (`chmod 755`)
+- [ ] Visit your site — the setup wizard (`/install.php`) runs automatically
+  - [ ] Confirm all server requirements pass (Step 1)
+  - [ ] Enter database credentials and verify connection (Step 2)
+  - [ ] Install the database schema (Step 3)
+  - [ ] Create the admin account (Step 4)
+  - [ ] Set site name, URL, default language, and encryption key (Step 5)
+- [ ] Log in at `/admin/login` and complete MFA setup with Microsoft Authenticator
+- [ ] Configure site settings (title, theme, contact email, analytics) in **Admin → Settings**
+- [ ] Configure mail settings (PHP mail or SMTP) in **Admin → Settings → Contact**
+- [ ] Configure social network profile URLs in **Admin → Settings → Social** (optional)
 - [ ] Create your first photography category
 - [ ] Upload your first photos
 - [ ] Configure watermark settings (optional)
