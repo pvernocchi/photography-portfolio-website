@@ -1,6 +1,52 @@
 <?php
 declare(strict_types=1);
 
+// ── Installation guard ────────────────────────────────────────────────────────
+// Runs before bootstrap.php so a missing or broken config never causes a fatal
+// error on the first visit. If the app is not yet set up, the visitor is sent
+// to the setup wizard instead.
+(static function (): void {
+    $lockFile = __DIR__ . '/../storage/installed.lock';
+    if (is_file($lockFile)) {
+        return; // Already installed — proceed normally.
+    }
+
+    $needsSetup = false;
+    $configFile = __DIR__ . '/../config/config.php';
+
+    if (!is_file($configFile)) {
+        $needsSetup = true;
+    } else {
+        try {
+            $cfg   = require $configFile;
+            $db    = $cfg['database'] ?? [];
+            $pdo   = new PDO(
+                sprintf(
+                    'mysql:host=%s;dbname=%s;charset=%s',
+                    $db['host']    ?? '',
+                    $db['name']    ?? '',
+                    $db['charset'] ?? 'utf8mb4'
+                ),
+                (string) ($db['user'] ?? ''),
+                (string) ($db['pass'] ?? ''),
+                [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
+            );
+            $count = (int) $pdo->query('SELECT COUNT(*) FROM users')->fetchColumn();
+            if ($count === 0) {
+                $needsSetup = true;
+            }
+        } catch (Throwable) {
+            $needsSetup = true;
+        }
+    }
+
+    if ($needsSetup) {
+        header('Location: /install.php');
+        exit;
+    }
+})();
+// ── End installation guard ────────────────────────────────────────────────────
+
 require_once __DIR__ . '/../app/bootstrap.php';
 
 use App\Controllers\AdminController;

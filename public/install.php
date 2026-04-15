@@ -3,16 +3,7 @@ declare(strict_types=1);
 
 define('INSTALL_BASE', dirname(__DIR__));
 
-// ── Already installed guard ───────────────────────────────────────────────────
 $lockFile = INSTALL_BASE . '/storage/installed.lock';
-if (is_file($lockFile)) {
-    // Allow the completion page to render once (step=6 in session), then lock out
-    $sessionStep = isset($_SESSION) ? (int) ($_SESSION['install_step'] ?? 0) : 0;
-    if ($sessionStep < 6) {
-        header('Location: /');
-        exit;
-    }
-}
 
 // ── Session ───────────────────────────────────────────────────────────────────
 if (session_status() !== PHP_SESSION_ACTIVE) {
@@ -26,10 +17,50 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
 }
 
-// Re-check lock with session available
+// ── Already installed guard ───────────────────────────────────────────────────
+// Refuse access once the lock file exists, except when rendering the one-time
+// completion screen (step 6) that is reached immediately after finishing setup.
 if (is_file($lockFile) && (int) ($_SESSION['install_step'] ?? 0) < 6) {
     header('Location: /');
     exit;
+}
+
+// ── Existing installation detection ──────────────────────────────────────────
+// If config.php exists, the database is reachable, and at least one admin user
+// exists, the app is already fully installed. Create the lock file automatically
+// to avoid any risk of data loss, then redirect away from the wizard.
+if (!is_file($lockFile)) {
+    $existingConfig = INSTALL_BASE . '/config/config.php';
+    if (is_file($existingConfig)) {
+        try {
+            $existingCfg = require $existingConfig;
+            $existingDb  = $existingCfg['database'] ?? [];
+            $existingPdo = new PDO(
+                sprintf(
+                    'mysql:host=%s;dbname=%s;charset=%s',
+                    $existingDb['host']    ?? '',
+                    $existingDb['name']    ?? '',
+                    $existingDb['charset'] ?? 'utf8mb4'
+                ),
+                (string) ($existingDb['user'] ?? ''),
+                (string) ($existingDb['pass'] ?? ''),
+                [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
+            );
+            $existingUserCount = (int) $existingPdo
+                ->query('SELECT COUNT(*) FROM users')
+                ->fetchColumn();
+            if ($existingUserCount > 0) {
+                // Full installation detected — stamp the lock file and bail out.
+                file_put_contents($lockFile, date('c') . PHP_EOL);
+                header('Location: /');
+                exit;
+            }
+            unset($existingCfg, $existingDb, $existingPdo, $existingUserCount);
+        } catch (Throwable) {
+            // Incomplete or broken installation — allow the wizard to continue.
+        }
+    }
+    unset($existingConfig);
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -68,7 +99,7 @@ function make_pdo(array $db): PDO
         PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
     ];
-    if (defined('PDO::MYSQL_ATTR_CONNECT_TIMEOUT')) {
+    if (extension_loaded('pdo_mysql')) {
         $opts[PDO::MYSQL_ATTR_CONNECT_TIMEOUT] = 5;
     }
     return new PDO(
@@ -824,10 +855,18 @@ $stepHeadings = [
             <script>
             document.getElementById('generate-key').addEventListener('click', function () {
                 var chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-                var arr   = new Uint8Array(32);
-                crypto.getRandomValues(arr);
+                var len   = chars.length;               // 62
+                var limit = 256 - (256 % len);          // 248 — unbiased ceiling
                 var key   = '';
-                arr.forEach(function (byte) { key += chars[byte % chars.length]; });
+                while (key.length < 32) {
+                    var arr = new Uint8Array(64);        // oversample to minimise loops
+                    crypto.getRandomValues(arr);
+                    for (var i = 0; i < arr.length && key.length < 32; i++) {
+                        if (arr[i] < limit) {           // reject biased values
+                            key += chars[arr[i] % len];
+                        }
+                    }
+                }
                 document.getElementById('app_key').value = key;
             });
             </script>
