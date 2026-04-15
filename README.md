@@ -1,4 +1,4 @@
-# vernocchi.es — Photography Portfolio
+# Photography Portfolio Website
 
 A bilingual (Spanish/English) photography portfolio web application built with **plain PHP 8.1** — zero Composer dependencies, zero frameworks. Designed for Namecheap shared hosting with MySQL.
 
