@@ -75,7 +75,7 @@ All three respond to `prefers-color-scheme` for automatic dark/light switching.
 | PHP | 8.1 or newer |
 | MySQL | 8 or newer |
 | Web server | Apache with `mod_rewrite` |
-| PHP extensions | GD, OpenSSL, PDO + PDO_MySQL, mbstring |
+| PHP extensions | GD **or** Imagick, OpenSSL, PDO + PDO_MySQL, mbstring |
 | Mail | PHP `mail()` function **or** an external SMTP server |
 
 ---
