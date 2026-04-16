@@ -120,6 +120,7 @@ $router->group('/admin', [], static function (Router $router): void {
 
         $router->get('/settings', [SettingsController::class, 'index']);
         $router->post('/settings/general', [SettingsController::class, 'updateGeneral']);
+        $router->post('/settings/security', [SettingsController::class, 'updateSecurity']);
         $router->post('/settings/theme', [SettingsController::class, 'updateTheme']);
         $router->post('/settings/about', [SettingsController::class, 'updateAbout']);
         $router->post('/settings/watermark', [SettingsController::class, 'updateWatermark']);
