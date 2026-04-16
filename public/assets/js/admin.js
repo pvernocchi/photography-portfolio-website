@@ -4,6 +4,35 @@ window.VernocchiAdmin = {
   csrfToken: document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
 };
 
+/* ── Mobile nav drawer ───────────────────────────────────────────────────── */
+(function () {
+  const hamburger = document.getElementById('nav-hamburger');
+  const drawer = document.getElementById('nav-drawer');
+  const overlay = document.getElementById('nav-drawer-overlay');
+  const closeBtn = document.getElementById('nav-drawer-close');
+  if (!hamburger || !drawer) return;
+
+  function openDrawer() {
+    drawer.classList.add('open');
+    hamburger.setAttribute('aria-expanded', 'true');
+    document.body.style.overflow = 'hidden';
+    closeBtn?.focus();
+  }
+  function closeDrawer() {
+    drawer.classList.remove('open');
+    hamburger.setAttribute('aria-expanded', 'false');
+    document.body.style.overflow = '';
+    hamburger.focus();
+  }
+
+  hamburger.addEventListener('click', openDrawer);
+  closeBtn?.addEventListener('click', closeDrawer);
+  overlay?.addEventListener('click', closeDrawer);
+  drawer.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeDrawer();
+  });
+}());
+
 window.AdminBulkSelect = {
   init(gridSel, formSel, barSel, countSel, idsSel, selectAllSel, selectNoneSel) {
     const grid = document.querySelector(gridSel);
