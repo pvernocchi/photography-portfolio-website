@@ -11,9 +11,12 @@ use App\Core\CSRF;
 <div class="card">
     <ul class="sortable-list" id="category-sortable">
         <?php foreach ($categories as $category): ?>
-            <li class="sortable-item" draggable="true" data-id="<?= (int) $category['id'] ?>">
-                <strong><?= e($category['name_en']) ?></strong>
-                <span class="muted">/ <?= e($category['slug']) ?> · <?= (int) $category['images_count'] ?> images</span>
+        <li class="sortable-item" draggable="true" data-id="<?= (int) $category['id'] ?>">
+                <span class="sortable-handle" aria-hidden="true">⠿</span>
+                <div class="sortable-item-body">
+                    <strong><?= e($category['name_en']) ?></strong>
+                    <div class="muted">/ <?= e($category['slug']) ?> · <?= (int) $category['images_count'] ?> images</div>
+                </div>
                 <div class="actions">
                     <a href="/admin/categories/<?= (int) $category['id'] ?>/images">Images</a>
                     <a href="/admin/categories/<?= (int) $category['id'] ?>/edit">Edit</a>
