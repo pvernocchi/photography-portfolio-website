@@ -30,12 +30,6 @@ class SettingsController extends Controller
         $this->done('General settings updated.');
     }
 
-    public function updateSecurity(): void
-    {
-        $this->guardCsrf('/admin/settings');
-        $this->done('Security settings updated.');
-    }
-
     public function updateTheme(): void
     {
         $this->guardCsrf('/admin/settings');
