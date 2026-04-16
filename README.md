@@ -212,27 +212,6 @@ Seven tables, all InnoDB with `utf8mb4`:
 
 ---
 
-## Migrations
-
-Fresh installs use `database/schema.sql` via the setup wizard — no extra steps needed.
-
-For **existing (production) installs**, each file in `database/migrations/` is an incremental SQL script. Run them in order against your live database when upgrading.
-
-> **Important:** You must tell MySQL which database to target. Replace `your_database` with your actual database name both in the command below **and** in the `USE` line at the top of each migration file.
-
-```bash
-# Replace your_database with your actual database name in the file header too
-mysql -u YOUR_USER -p YOUR_DATABASE < database/migrations/001_captcha_settings.sql
-```
-
-| Migration | What it does |
-|---|---|
-| `001_captcha_settings.sql` | Moves Turnstile keys from the `general` group to `contact`; adds `captcha_enabled`, `captcha_provider`, `recaptcha_site_key`, `recaptcha_secret_key` settings |
-
-All migration scripts use `INSERT IGNORE` and conditional `UPDATE` so they are **idempotent** — safe to run more than once.
-
----
-
 ## Architecture
 
 - **Zero dependencies** — no Composer, no npm, no jQuery, no frameworks
