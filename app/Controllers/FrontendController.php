@@ -78,7 +78,18 @@ class FrontendController extends Controller
         $siteTitle = (string) Setting::get('site_title', 'Vernocchi Photography');
         $contactEmail = (string) Setting::get('contact_email', '');
         $siteDescription = (string) Setting::get('site_description_' . $locale, '');
-        $turnstileSiteKey = trim((string) Setting::get('turnstile_site_key', (string) app_config('turnstile.site_key', '')));
+
+        $captchaEnabled = (string) Setting::get('captcha_enabled', '0') === '1';
+        $captchaProvider = trim((string) Setting::get('captcha_provider', 'turnstile'));
+        $turnstileSiteKey = '';
+        $recaptchaSiteKey = '';
+        if ($captchaEnabled) {
+            if ($captchaProvider === 'recaptcha') {
+                $recaptchaSiteKey = trim((string) Setting::get('recaptcha_site_key', ''));
+            } else {
+                $turnstileSiteKey = trim((string) Setting::get('turnstile_site_key', (string) app_config('turnstile.site_key', '')));
+            }
+        }
 
         $socialNetworks = [];
         $socialKeys = [
@@ -108,7 +119,9 @@ class FrontendController extends Controller
             'metaDescription' => $this->metaDescription(),
             'gaId' => (string) Setting::get('google_analytics_id', ''),
             'csrfToken' => \App\Core\CSRF::token(),
+            'captchaProvider' => $captchaEnabled ? $captchaProvider : '',
             'turnstileSiteKey' => $turnstileSiteKey,
+            'recaptchaSiteKey' => $recaptchaSiteKey,
             'pageScripts' => ['/assets/js/contact-form.js'],
         ], 'frontend');
     }
@@ -129,14 +142,26 @@ class FrontendController extends Controller
             return;
         }
 
-        $turnstileSecretKey = trim((string) Setting::get('turnstile_secret_key', (string) app_config('turnstile.secret_key', '')));
-        $turnstileToken = trim((string) ($_POST['cf-turnstile-response'] ?? ''));
-        $remoteIp = (string) ($_SERVER['HTTP_CF_CONNECTING_IP'] ?? $_SERVER['REMOTE_ADDR'] ?? '');
-        if ($turnstileSecretKey !== '') {
-            if ($turnstileToken === '' || !$this->verifyTurnstileToken($turnstileToken, $turnstileSecretKey, $remoteIp)) {
-                http_response_code(400);
-                echo json_encode(['success' => false, 'message' => __('contact.captcha_error')]);
-                return;
+        $captchaEnabled = (string) Setting::get('captcha_enabled', '0') === '1';
+        if ($captchaEnabled) {
+            $captchaProvider = trim((string) Setting::get('captcha_provider', 'turnstile'));
+            $remoteIp = (string) ($_SERVER['HTTP_CF_CONNECTING_IP'] ?? $_SERVER['REMOTE_ADDR'] ?? '');
+            if ($captchaProvider === 'recaptcha') {
+                $recaptchaSecretKey = trim((string) Setting::get('recaptcha_secret_key', ''));
+                $recaptchaToken = trim((string) ($_POST['g-recaptcha-response'] ?? ''));
+                if ($recaptchaSecretKey !== '' && ($recaptchaToken === '' || !$this->verifyRecaptchaToken($recaptchaToken, $recaptchaSecretKey, $remoteIp))) {
+                    http_response_code(400);
+                    echo json_encode(['success' => false, 'message' => __('contact.captcha_error')]);
+                    return;
+                }
+            } else {
+                $turnstileSecretKey = trim((string) Setting::get('turnstile_secret_key', (string) app_config('turnstile.secret_key', '')));
+                $turnstileToken = trim((string) ($_POST['cf-turnstile-response'] ?? ''));
+                if ($turnstileSecretKey !== '' && ($turnstileToken === '' || !$this->verifyTurnstileToken($turnstileToken, $turnstileSecretKey, $remoteIp))) {
+                    http_response_code(400);
+                    echo json_encode(['success' => false, 'message' => __('contact.captcha_error')]);
+                    return;
+                }
             }
         }
 
@@ -219,6 +244,38 @@ class FrontendController extends Controller
             $response = file_get_contents('https://challenges.cloudflare.com/turnstile/v0/siteverify', false, $context);
         } catch (\Throwable $throwable) {
             error_log('Turnstile verification failed: ' . $throwable->getMessage());
+            return false;
+        }
+
+        if ($response === false) {
+            return false;
+        }
+
+        $decoded = json_decode($response, true);
+        return is_array($decoded) && ($decoded['success'] ?? false) === true;
+    }
+
+    private function verifyRecaptchaToken(string $token, string $secretKey, string $remoteIp): bool
+    {
+        $payload = http_build_query([
+            'secret' => $secretKey,
+            'response' => $token,
+            'remoteip' => $remoteIp,
+        ]);
+
+        $context = stream_context_create([
+            'http' => [
+                'method' => 'POST',
+                'header' => "Content-Type: application/x-www-form-urlencoded\r\n",
+                'content' => $payload,
+                'timeout' => 5,
+            ],
+        ]);
+
+        try {
+            $response = file_get_contents('https://www.google.com/recaptcha/api/siteverify', false, $context);
+        } catch (\Throwable $throwable) {
+            error_log('reCAPTCHA verification failed: ' . $throwable->getMessage());
             return false;
         }
 

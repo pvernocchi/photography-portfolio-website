@@ -18,7 +18,7 @@ This application gives photographers a complete, self-contained website with a p
 - Organize photos into bilingual categories with drag-and-drop ordering
 - Full-screen lightbox viewer with keyboard and swipe navigation
 - Homepage hero section with featured category highlights
-- About page and contact form (honeypot + Cloudflare Turnstile)
+- About page and contact form (honeypot + CAPTCHA: Cloudflare Turnstile or Google reCAPTCHA v2)
 - Dynamic XML sitemap for search engines
 
 **Image Management**
@@ -174,7 +174,9 @@ Files excluded from deploy: `.git*`, `.github/`, `README.md`, `database/`, `.git
 │   └── config.example.php     # Configuration template
 ├── database/
 │   ├── schema.sql             # Full schema + seed data
-│   └── seed_admin.php         # CLI admin user creation
+│   ├── seed_admin.php         # CLI admin user creation
+│   └── migrations/            # Incremental SQL migrations for existing installs
+│       └── 001_captcha_settings.sql
 ├── public/                    # Apache document root
 │   ├── .htaccess              # Rewrite rules
 │   ├── index.php              # Front controller
@@ -207,6 +209,27 @@ Seven tables, all InnoDB with `utf8mb4`:
 | `images` | Filename, original filename, bilingual titles/alt text, dimensions, size |
 | `image_category` | Many-to-many join with per-category sort order |
 | `settings` | Key-value store for all configuration (theme, SEO, mail, social, etc.) |
+
+---
+
+## Migrations
+
+Fresh installs use `database/schema.sql` via the setup wizard — no extra steps needed.
+
+For **existing (production) installs**, each file in `database/migrations/` is an incremental SQL script. Run them in order against your live database when upgrading.
+
+> **Important:** You must tell MySQL which database to target. Replace `your_database` with your actual database name both in the command below **and** in the `USE` line at the top of each migration file.
+
+```bash
+# Replace your_database with your actual database name in the file header too
+mysql -u YOUR_USER -p YOUR_DATABASE < database/migrations/001_captcha_settings.sql
+```
+
+| Migration | What it does |
+|---|---|
+| `001_captcha_settings.sql` | Moves Turnstile keys from the `general` group to `contact`; adds `captcha_enabled`, `captcha_provider`, `recaptcha_site_key`, `recaptcha_secret_key` settings |
+
+All migration scripts use `INSERT IGNORE` and conditional `UPDATE` so they are **idempotent** — safe to run more than once.
 
 ---
 

@@ -30,13 +30,6 @@ class SettingsController extends Controller
         $this->done('General settings updated.');
     }
 
-    public function updateSecurity(): void
-    {
-        $this->guardCsrf('/admin/settings');
-        $this->saveMany(['turnstile_site_key', 'turnstile_secret_key']);
-        $this->done('Security settings updated.');
-    }
-
     public function updateTheme(): void
     {
         $this->guardCsrf('/admin/settings');
@@ -103,6 +96,16 @@ class SettingsController extends Controller
         if ($newPassword !== '') {
             Setting::set('smtp_password', Encryption::encrypt($newPassword), 'text', 'contact');
         }
+
+        Setting::set('captcha_enabled', isset($_POST['captcha_enabled']) ? '1' : '0', 'boolean', 'contact');
+
+        $captchaProvider = trim((string) ($_POST['captcha_provider'] ?? 'turnstile'));
+        if (!in_array($captchaProvider, ['turnstile', 'recaptcha'], true)) {
+            $captchaProvider = 'turnstile';
+        }
+        Setting::set('captcha_provider', $captchaProvider, 'select', 'contact');
+
+        $this->saveMany(['turnstile_site_key', 'turnstile_secret_key', 'recaptcha_site_key', 'recaptcha_secret_key'], 'contact');
 
         $this->done('Contact settings updated.');
     }
