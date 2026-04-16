@@ -3,9 +3,17 @@
 -- and adds captcha_enabled, captcha_provider, recaptcha_site_key,
 -- and recaptcha_secret_key settings.
 --
+-- HOW TO RUN (replace "your_database" with your actual database name):
+--   mysql -u YOUR_USER -p YOUR_DATABASE < 001_captcha_settings.sql
+--
 -- Safe to run on existing installs: INSERT IGNORE skips rows that
 -- already exist, and UPDATE only touches the setting_group column
 -- for the Turnstile keys.
+
+-- Ensure we are operating on the correct database.
+-- Replace 'your_database' with your actual database name, or pass the
+-- database name on the command line (see HOW TO RUN above).
+USE `your_database`;
 
 -- 1. Move existing Turnstile keys from 'general' to 'contact' group.
 --    If they were never saved via the old Security tab, these rows
