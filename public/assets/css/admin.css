@@ -310,7 +310,7 @@ code {
 .cards-grid {
     display: grid;
     gap: 1rem;
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
 }
 
 .stat-card {
@@ -608,7 +608,7 @@ legend {
     font-size: 0.875rem;
     border-left: 3px solid;
 }
-.alert-error   { background: var(--danger-dim);  color: #ff7070; border-color: var(--danger); border: 1px solid rgba(240,77,77,0.25); border-left: 3px solid var(--danger); }
+.alert-error   { background: var(--danger-dim);  color: #ff7070; border: 1px solid rgba(240,77,77,0.25); border-left: 3px solid var(--danger); }
 .alert-success { background: var(--success-dim); color: var(--success); border: 1px solid rgba(52,211,153,0.25); border-left: 3px solid var(--success); }
 .alert-warning { background: var(--warning-dim); color: var(--warning); border: 1px solid rgba(245,158,11,0.25); border-left: 3px solid var(--warning); }
 

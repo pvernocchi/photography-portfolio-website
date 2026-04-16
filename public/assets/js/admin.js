@@ -16,7 +16,8 @@ window.VernocchiAdmin = {
     drawer.classList.add('open');
     hamburger.setAttribute('aria-expanded', 'true');
     document.body.style.overflow = 'hidden';
-    closeBtn?.focus();
+    const focusTarget = closeBtn || drawer.querySelector('a, button');
+    focusTarget?.focus();
   }
   function closeDrawer() {
     drawer.classList.remove('open');
