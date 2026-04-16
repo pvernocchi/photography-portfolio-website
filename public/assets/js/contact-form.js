@@ -7,7 +7,8 @@
 (function () {
   const form = document.getElementById('contact-form');
   const statusDiv = document.getElementById('contact-status');
-  const captchaWidget = form ? form.querySelector('.cf-turnstile') : null;
+  const turnstileWidget = form ? form.querySelector('.cf-turnstile') : null;
+  const recaptchaWidget = form ? form.querySelector('.g-recaptcha') : null;
   
   if (!form || !statusDiv) return;
   
@@ -47,7 +48,13 @@
     
     try {
       const formData = new FormData(form);
-      if (captchaWidget && !formData.get('cf-turnstile-response')) {
+
+      if (turnstileWidget && !formData.get('cf-turnstile-response')) {
+        showStatus(form.dataset.captchaMessage || 'Please verify that you are human.', false);
+        return;
+      }
+
+      if (recaptchaWidget && !formData.get('g-recaptcha-response')) {
         showStatus(form.dataset.captchaMessage || 'Please verify that you are human.', false);
         return;
       }
@@ -72,13 +79,17 @@
       showStatus('An error occurred. Please try again.', false);
       console.error('Contact form error:', error);
     } finally {
-      if (captchaWidget && window.turnstile && typeof window.turnstile.reset === 'function') {
-        const widgetId = captchaWidget.getAttribute('data-widget-id');
+      if (turnstileWidget && window.turnstile && typeof window.turnstile.reset === 'function') {
+        const widgetId = turnstileWidget.getAttribute('data-widget-id');
         if (widgetId) {
           window.turnstile.reset(widgetId);
         } else {
           window.turnstile.reset();
         }
+      }
+
+      if (recaptchaWidget && window.grecaptcha && typeof window.grecaptcha.reset === 'function') {
+        window.grecaptcha.reset();
       }
 
       // Re-enable submit button

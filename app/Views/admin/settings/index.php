@@ -16,14 +16,13 @@ $s = static fn (string $key, string $default = ''): string => (string) ($setting
 
 <div class="tabs">
     <button class="tab-btn active" data-tab="general">General</button>
-    <button class="tab-btn" data-tab="security">Security</button>
     <button class="tab-btn" data-tab="theme">Theme</button>
     <button class="tab-btn" data-tab="about">About</button>
     <button class="tab-btn" data-tab="watermark">Watermark</button>
     <button class="tab-btn" data-tab="analytics">Analytics</button>
     <button class="tab-btn" data-tab="seo">SEO</button>
     <button class="tab-btn" data-tab="social">Social</button>
-    <button class="tab-btn" data-tab="contact">Contact</button>
+    <button class="tab-btn" data-tab="contact">Contact Form</button>
 </div>
 
 <section class="tab-panel active" data-panel="general">
@@ -50,20 +49,6 @@ $s = static fn (string $key, string $default = ''): string => (string) ($setting
         <button class="btn btn-primary">Save</button>
     </form>
 </section>
-
-<section class="tab-panel" data-panel="security">
-    <form class="card form-stack" method="post" action="/admin/settings/security">
-        <?= CSRF::field() ?>
-        <label>Turnstile site key
-            <input name="turnstile_site_key" value="<?= e($s('turnstile_site_key')) ?>">
-        </label>
-        <label>Turnstile secret key
-            <input name="turnstile_secret_key" type="password" value="<?= e($s('turnstile_secret_key')) ?>" autocomplete="off">
-        </label>
-        <button class="btn btn-primary">Save</button>
-    </form>
-</section>
-
 <section class="tab-panel" data-panel="theme">
     <form class="card form-stack" method="post" action="/admin/settings/theme">
         <?= CSRF::field() ?>
@@ -225,17 +210,71 @@ $s = static fn (string $key, string $default = ''): string => (string) ($setting
                 <input name="smtp_from_email" value="<?= e($s('smtp_from_email')) ?>">
             </label>
         </div>
+
+        <fieldset>
+            <legend>CAPTCHA</legend>
+            <label class="checkbox-row">
+                <input type="checkbox" id="captcha-enabled-checkbox" name="captcha_enabled" value="1" <?= $s('captcha_enabled') === '1' ? 'checked' : '' ?>>
+                Enable CAPTCHA
+            </label>
+            <div id="captcha-provider-fields">
+                <label>CAPTCHA provider
+                    <select name="captcha_provider" id="captcha-provider-select">
+                        <option value="turnstile" <?= $s('captcha_provider', 'turnstile') === 'turnstile' ? 'selected' : '' ?>>Cloudflare Turnstile</option>
+                        <option value="recaptcha" <?= $s('captcha_provider', 'turnstile') === 'recaptcha' ? 'selected' : '' ?>>Google reCAPTCHA v2</option>
+                    </select>
+                </label>
+                <div id="captcha-turnstile-fields">
+                    <label>Turnstile site key
+                        <input name="turnstile_site_key" value="<?= e($s('turnstile_site_key')) ?>">
+                    </label>
+                    <label>Turnstile secret key
+                        <input name="turnstile_secret_key" type="password" value="<?= e($s('turnstile_secret_key')) ?>" autocomplete="off">
+                    </label>
+                </div>
+                <div id="captcha-recaptcha-fields">
+                    <label>reCAPTCHA site key
+                        <input name="recaptcha_site_key" value="<?= e($s('recaptcha_site_key')) ?>">
+                    </label>
+                    <label>reCAPTCHA secret key
+                        <input name="recaptcha_secret_key" type="password" value="<?= e($s('recaptcha_secret_key')) ?>" autocomplete="off">
+                    </label>
+                </div>
+            </div>
+        </fieldset>
+
         <button class="btn btn-primary">Save</button>
     </form>
     <script>
         (function () {
-            const select = document.getElementById('mail-driver-select');
+            const mailSelect = document.getElementById('mail-driver-select');
             const smtpFields = document.getElementById('smtp-fields');
-            function toggle() {
-                smtpFields.style.display = select.value === 'smtp' ? '' : 'none';
+            function toggleSmtp() {
+                smtpFields.style.display = mailSelect.value === 'smtp' ? '' : 'none';
             }
-            toggle();
-            select.addEventListener('change', toggle);
+            toggleSmtp();
+            mailSelect.addEventListener('change', toggleSmtp);
+
+            const captchaCheckbox = document.getElementById('captcha-enabled-checkbox');
+            const captchaProviderFields = document.getElementById('captcha-provider-fields');
+            const providerSelect = document.getElementById('captcha-provider-select');
+            const turnstileFields = document.getElementById('captcha-turnstile-fields');
+            const recaptchaFields = document.getElementById('captcha-recaptcha-fields');
+
+            function toggleCaptchaProvider() {
+                const provider = providerSelect.value;
+                turnstileFields.style.display = provider === 'turnstile' ? '' : 'none';
+                recaptchaFields.style.display = provider === 'recaptcha' ? '' : 'none';
+            }
+
+            function toggleCaptcha() {
+                captchaProviderFields.style.display = captchaCheckbox.checked ? '' : 'none';
+            }
+
+            toggleCaptcha();
+            toggleCaptchaProvider();
+            captchaCheckbox.addEventListener('change', toggleCaptcha);
+            providerSelect.addEventListener('change', toggleCaptchaProvider);
         }());
     </script>
 </section>

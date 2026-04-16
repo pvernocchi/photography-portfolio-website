@@ -51,6 +51,10 @@
             <div class="form-group">
                 <div class="cf-turnstile" data-sitekey="<?= e($turnstileSiteKey) ?>"></div>
             </div>
+            <?php elseif (!empty($recaptchaSiteKey)): ?>
+            <div class="form-group">
+                <div class="g-recaptcha" data-sitekey="<?= e($recaptchaSiteKey) ?>"></div>
+            </div>
             <?php endif; ?>
             
             <div class="form-actions">
@@ -109,4 +113,6 @@
 
 <?php if (!empty($turnstileSiteKey)): ?>
 <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+<?php elseif (!empty($recaptchaSiteKey)): ?>
+<script src="https://www.google.com/recaptcha/api.js" async defer></script>
 <?php endif; ?>
