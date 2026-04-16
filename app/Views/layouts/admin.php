@@ -14,6 +14,9 @@ $appName = (string) app_config('app.name', 'Vernocchi Photography');
     <title><?= e($title ?? $appName) ?> · <?= e($appName) ?></title>
     <meta name="csrf-token" content="<?= e(CSRF::token()) ?>">
     <link rel="icon" type="image/svg+xml" href="https://www.vernocchi.es/Shutter-Icon-2.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
     <link rel="stylesheet" href="/assets/css/admin.css">
 </head>
 <body>
