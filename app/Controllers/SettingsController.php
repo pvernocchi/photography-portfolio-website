@@ -26,15 +26,37 @@ class SettingsController extends Controller
     public function updateGeneral(): void
     {
         $this->guardCsrf('/admin/settings');
-        $this->saveMany(['site_title', 'site_description_es', 'site_description_en', 'default_language', 'contact_email']);
+        $this->saveMany(['site_title', 'site_description_es', 'site_description_en', 'default_language']);
         $this->done('General settings updated.');
     }
 
-    public function updateSecurity(): void
+    public function updateContact(): void
     {
         $this->guardCsrf('/admin/settings');
-        $this->saveMany(['turnstile_site_key', 'turnstile_secret_key']);
-        $this->done('Security settings updated.');
+
+        /* Contact email */
+        Setting::set('contact_email', trim((string) ($_POST['contact_email'] ?? '')), 'text', 'contact');
+
+        /* Turnstile captcha */
+        Setting::set('turnstile_site_key', trim((string) ($_POST['turnstile_site_key'] ?? '')), 'text', 'contact');
+        Setting::set('turnstile_secret_key', trim((string) ($_POST['turnstile_secret_key'] ?? '')), 'text', 'contact');
+
+        /* Mail driver */
+        $driver = trim((string) ($_POST['mail_driver'] ?? 'mail'));
+        if (!in_array($driver, ['mail', 'smtp'], true)) {
+            $driver = 'mail';
+        }
+        Setting::set('mail_driver', $driver, 'text', 'contact');
+        Setting::set('smtp_logging_enabled', isset($_POST['smtp_logging_enabled']) ? '1' : '0', 'boolean', 'contact');
+
+        $this->saveMany(['smtp_host', 'smtp_port', 'smtp_encryption', 'smtp_username', 'smtp_from_name', 'smtp_from_email'], 'contact');
+
+        $newPassword = trim((string) ($_POST['smtp_password'] ?? ''));
+        if ($newPassword !== '') {
+            Setting::set('smtp_password', Encryption::encrypt($newPassword), 'text', 'contact');
+        }
+
+        $this->done('Contact form settings updated.');
     }
 
     public function updateTheme(): void
@@ -84,27 +106,6 @@ class SettingsController extends Controller
         $this->guardCsrf('/admin/settings');
         $this->saveMany(['social_instagram', 'social_facebook', 'social_twitter', 'social_linkedin', 'social_youtube', 'social_github'], 'social');
         $this->done('Social network settings updated.');
-    }
-
-    public function updateContact(): void
-    {
-        $this->guardCsrf('/admin/settings');
-
-        $driver = trim((string) ($_POST['mail_driver'] ?? 'mail'));
-        if (!in_array($driver, ['mail', 'smtp'], true)) {
-            $driver = 'mail';
-        }
-        Setting::set('mail_driver', $driver, 'text', 'contact');
-        Setting::set('smtp_logging_enabled', isset($_POST['smtp_logging_enabled']) ? '1' : '0', 'boolean', 'contact');
-
-        $this->saveMany(['smtp_host', 'smtp_port', 'smtp_encryption', 'smtp_username', 'smtp_from_name', 'smtp_from_email'], 'contact');
-
-        $newPassword = trim((string) ($_POST['smtp_password'] ?? ''));
-        if ($newPassword !== '') {
-            Setting::set('smtp_password', Encryption::encrypt($newPassword), 'text', 'contact');
-        }
-
-        $this->done('Contact settings updated.');
     }
 
     private function saveMany(array $keys, string $group = 'general'): void
