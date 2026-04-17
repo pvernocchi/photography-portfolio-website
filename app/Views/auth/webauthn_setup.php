@@ -59,7 +59,8 @@ use App\Core\CSRF;
 (function () {
   'use strict';
 
-  var csrfToken = window.VernocchiAdmin ? window.VernocchiAdmin.csrfToken : '';
+  var csrfMeta = document.querySelector('meta[name="csrf-token"]');
+  var csrfToken = csrfMeta ? csrfMeta.getAttribute('content') : '';
 
   function showError(msg) {
     var el = document.getElementById('sk-error');
