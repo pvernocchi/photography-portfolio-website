@@ -6,6 +6,7 @@ CREATE TABLE users (
     password_hash VARCHAR(255) NOT NULL,
     totp_secret VARCHAR(64) DEFAULT NULL,
     mfa_enabled TINYINT(1) DEFAULT 0,
+    webauthn_enabled TINYINT(1) NOT NULL DEFAULT 0,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -127,3 +128,18 @@ INSERT INTO settings (setting_key, setting_value, setting_type, setting_group) V
 ('social_linkedin', '', 'text', 'social'),
 ('social_youtube', '', 'text', 'social'),
 ('social_github', '', 'text', 'social');
+
+-- WebAuthn / FIDO2 credentials (migration 002)
+-- A user may have multiple registered security keys.
+CREATE TABLE webauthn_credentials (
+    id              INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    user_id         INT UNSIGNED    NOT NULL,
+    credential_id   VARCHAR(1024)   NOT NULL COMMENT 'base64url-encoded credential ID from the authenticator',
+    public_key_pem  TEXT            NOT NULL COMMENT 'PEM-encoded SubjectPublicKeyInfo for signature verification',
+    sign_count      INT UNSIGNED    NOT NULL DEFAULT 0,
+    name            VARCHAR(255)    NOT NULL DEFAULT 'Security Key',
+    created_at      DATETIME        DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE  KEY idx_credential_id (credential_id(255)),
+    INDEX   idx_user_id (user_id),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
