@@ -8,6 +8,11 @@
     gallery.addEventListener('dragstart', (e) => e.preventDefault());
     gallery.querySelectorAll('img').forEach((img) => { img.draggable = false; img.style.pointerEvents = 'none'; });
   });
+  const lightbox = document.getElementById('lightbox');
+  if (lightbox) {
+    lightbox.addEventListener('contextmenu', (e) => { e.preventDefault(); alert(message); });
+    lightbox.addEventListener('dragstart', (e) => e.preventDefault());
+  }
   document.addEventListener('keydown', (e) => {
     if ((e.ctrlKey && e.key.toLowerCase() === 's') || (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'i')) {
       e.preventDefault();
