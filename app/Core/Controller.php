@@ -42,4 +42,38 @@ abstract class Controller
         header('Location: ' . $url . $path);
         exit;
     }
+
+    /**
+     * Send a JSON response and exit.
+     *
+     * @param array<string, mixed> $data
+     */
+    protected function json(array $data, int $status = 200): never
+    {
+        http_response_code($status);
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode($data);
+        exit;
+    }
+
+    /**
+     * Send a JSON error response and exit.
+     */
+    protected function jsonError(string $message, int $status = 400): never
+    {
+        $this->json(['ok' => false, 'error' => $message], $status);
+    }
+
+    /**
+     * Parse the raw request body as JSON and return the decoded array.
+     * Returns an empty array if the body is missing or not valid JSON.
+     *
+     * @return array<string, mixed>
+     */
+    protected function jsonInput(): array
+    {
+        $raw  = (string) file_get_contents('php://input');
+        $data = json_decode($raw, true);
+        return is_array($data) ? $data : [];
+    }
 }

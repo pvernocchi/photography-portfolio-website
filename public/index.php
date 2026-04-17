@@ -89,6 +89,10 @@ $router->group('/admin', [], static function (Router $router): void {
     $router->get('/mfa/verify', [AuthController::class, 'showMfaVerify'], ['auth']);
     $router->post('/mfa/verify', [AuthController::class, 'verifyMfa'], ['auth']);
 
+    // WebAuthn assertion — accessible during the pending-MFA phase (no full auth required)
+    $router->post('/mfa/webauthn/assert/options', [AuthController::class, 'webAuthnAssertOptions'], ['auth']);
+    $router->post('/mfa/webauthn/assert', [AuthController::class, 'webAuthnAssert'], ['auth']);
+
     $router->get('/logout', [AuthController::class, 'logout'], ['auth']);
 
     $router->group('', ['auth', 'mfa'], static function (Router $router): void {
@@ -130,6 +134,12 @@ $router->group('/admin', [], static function (Router $router): void {
 
         $router->get('/settings/password', [AuthController::class, 'showChangePassword']);
         $router->post('/settings/password', [AuthController::class, 'changePassword']);
+
+        // WebAuthn key management — requires full authentication
+        $router->get('/mfa/webauthn/setup', [AuthController::class, 'showWebAuthnSetup']);
+        $router->post('/mfa/webauthn/register/options', [AuthController::class, 'webAuthnRegisterOptions']);
+        $router->post('/mfa/webauthn/register', [AuthController::class, 'webAuthnRegister']);
+        $router->post('/mfa/webauthn/{id}/delete', [AuthController::class, 'webAuthnDeleteKey']);
     });
 });
 

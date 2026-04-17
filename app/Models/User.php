@@ -38,6 +38,20 @@ class User
         ]);
     }
 
+    public static function enableWebAuthn(int $id): bool
+    {
+        $sql = 'UPDATE users SET webauthn_enabled = 1 WHERE id = :id';
+        $statement = Database::instance()->pdo()->prepare($sql);
+        return $statement->execute([':id' => $id]);
+    }
+
+    public static function disableWebAuthn(int $id): bool
+    {
+        $sql = 'UPDATE users SET webauthn_enabled = 0 WHERE id = :id';
+        $statement = Database::instance()->pdo()->prepare($sql);
+        return $statement->execute([':id' => $id]);
+    }
+
     public static function updatePassword(int $id, string $passwordHash): bool
     {
         $sql = 'UPDATE users SET password_hash = :password_hash WHERE id = :id';
