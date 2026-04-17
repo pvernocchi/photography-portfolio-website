@@ -202,7 +202,10 @@ class AuthController extends Controller
     public function webAuthnAssert(): void
     {
         $input = $this->jsonInput();
-        if (!CSRF::validate((string) ($input['csrf_token'] ?? ''))) {
+        // Use check() (no token rotation) so a failed assertion allows retrying
+        // without the CSRF token becoming stale. SameSite=Strict cookies provide
+        // the underlying CSRF protection for these JSON endpoints.
+        if (!CSRF::check((string) ($input['csrf_token'] ?? ''))) {
             $this->jsonError('Invalid security token.', 403);
         }
 
@@ -322,7 +325,10 @@ class AuthController extends Controller
     public function webAuthnRegister(): void
     {
         $input = $this->jsonInput();
-        if (!CSRF::validate((string) ($input['csrf_token'] ?? ''))) {
+        // Use check() (no token rotation) so a failed registration allows retrying
+        // without the CSRF token becoming stale. SameSite=Strict cookies + the
+        // session-bound challenge provide the underlying CSRF/replay protection.
+        if (!CSRF::check((string) ($input['csrf_token'] ?? ''))) {
             $this->jsonError('Invalid security token.', 403);
         }
 

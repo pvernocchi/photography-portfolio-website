@@ -64,7 +64,10 @@ final class CBOR
             return (int) unpack('N', $this->readBytes(4))[1];
         }
         if ($additionalInfo === 27) {
-            // 64-bit big-endian — safe on 64-bit PHP builds.
+            // 64-bit big-endian — requires a 64-bit PHP build.
+            if (PHP_INT_SIZE < 8) {
+                throw new \RuntimeException('CBOR: 64-bit integer values require a 64-bit PHP build.');
+            }
             $hi = (int) unpack('N', $this->readBytes(4))[1];
             $lo = (int) unpack('N', $this->readBytes(4))[1];
             return ($hi << 32) | $lo;
