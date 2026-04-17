@@ -29,4 +29,19 @@ class CSRF
         $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
         return true;
     }
+
+    /**
+     * Validate the CSRF token without rotating it.
+     * Use for AJAX/JSON endpoints where the page is not reloaded between requests
+     * (e.g. the two-step WebAuthn challenge/response flow).
+     */
+    public static function check(?string $token): bool
+    {
+        $sessionToken = $_SESSION['csrf_token'] ?? '';
+        if ($token === null || $sessionToken === '' || !hash_equals((string) $sessionToken, $token)) {
+            return false;
+        }
+
+        return true;
+    }
 }

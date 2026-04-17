@@ -26,6 +26,7 @@ $appName = (string) app_config('app.name', 'Vernocchi Photography');
             <a href="/admin/images">Images</a>
             <a href="/admin/settings">Settings</a>
             <a href="/admin/settings/password">Password</a>
+            <a href="/admin/mfa/webauthn/setup">Security Keys</a>
             <?php if (Auth::check() || Auth::hasPartialSession()): ?>
                 <a href="/admin/logout">Logout</a>
             <?php endif; ?>
