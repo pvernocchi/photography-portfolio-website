@@ -1,7 +1,6 @@
 <?php declare(strict_types=1);
 $siteTitle = (string) \App\Models\Setting::get('site_title', 'Vernocchi Photography');
 $navCategories = \App\Models\Category::visible();
-$privateNavCategories = \App\Models\Category::visiblePrivate();
 ?>
 <nav class="front-nav">
     <a href="/" class="brand"><?= e($siteTitle) ?></a>
@@ -9,17 +8,11 @@ $privateNavCategories = \App\Models\Category::visiblePrivate();
     <div class="menu-links">
         <div class="nav-dropdown">
             <a href="/gallery" class="nav-dropdown-toggle"><?= e(__('nav.gallery')) ?></a>
-            <?php if (!empty($navCategories) || !empty($privateNavCategories)): ?>
+            <?php if (!empty($navCategories)): ?>
             <div class="nav-dropdown-menu">
                 <?php foreach ($navCategories as $cat): ?>
                     <a href="/gallery/<?= e($cat['slug']) ?>"><?= e(\App\Core\Language::locale() === 'en' && ($cat['name_en'] ?? '') !== '' ? $cat['name_en'] : $cat['name_es']) ?></a>
                 <?php endforeach; ?>
-                <?php if (!empty($privateNavCategories)): ?>
-                    <span class="nav-dropdown-section"><?= e(__('nav.private_gallery')) ?></span>
-                    <?php foreach ($privateNavCategories as $cat): ?>
-                        <a href="/private-gallery/<?= e($cat['slug']) ?>"><?= e(\App\Core\Language::locale() === 'en' && ($cat['name_en'] ?? '') !== '' ? $cat['name_en'] : $cat['name_es']) ?></a>
-                    <?php endforeach; ?>
-                <?php endif; ?>
             </div>
             <?php endif; ?>
         </div>

@@ -248,18 +248,6 @@ class Image
         return array_column($statement->fetchAll() ?: [], 'category_id');
     }
 
-    public static function belongsToCategory(int $imageId, int $categoryId): bool
-    {
-        $statement = Database::instance()->pdo()->prepare(
-            'SELECT 1 FROM image_category WHERE image_id = :image_id AND category_id = :category_id LIMIT 1'
-        );
-        $statement->execute([
-            ':image_id' => $imageId,
-            ':category_id' => $categoryId,
-        ]);
-        return (bool) $statement->fetchColumn();
-    }
-
     public static function countAll(): int
     {
         $value = Database::instance()->pdo()->query('SELECT COUNT(*) FROM images')->fetchColumn();
