@@ -46,6 +46,9 @@ class CategoryController extends Controller
             Session::flash('error', 'Slug already in use.');
             $this->redirect('/admin/categories/create');
         }
+        if (!$this->preparePrivateSettings($payload, null)) {
+            $this->redirect('/admin/categories/create');
+        }
 
         Category::create($payload);
         Session::flash('success', 'Category created.');
@@ -76,6 +79,12 @@ class CategoryController extends Controller
         }
 
         $categoryId = (int) $id;
+        $existingCategory = Category::find($categoryId);
+        if ($existingCategory === null) {
+            Session::flash('error', 'Category not found.');
+            $this->redirect('/admin/categories');
+        }
+
         $payload = $this->payload();
         if ($payload['name_es'] === '' || $payload['name_en'] === '' || $payload['slug'] === '') {
             Session::flash('error', 'Name and slug are required.');
@@ -83,6 +92,9 @@ class CategoryController extends Controller
         }
         if (Category::slugExists($payload['slug'], $categoryId)) {
             Session::flash('error', 'Slug already in use.');
+            $this->redirect('/admin/categories/' . $categoryId . '/edit');
+        }
+        if (!$this->preparePrivateSettings($payload, $existingCategory)) {
             $this->redirect('/admin/categories/' . $categoryId . '/edit');
         }
 
@@ -137,7 +149,43 @@ class CategoryController extends Controller
             'name_en' => trim((string) ($_POST['name_en'] ?? '')),
             'slug' => $this->slugify((string) ($_POST['slug'] ?? $_POST['name_en'] ?? '')),
             'is_visible' => isset($_POST['is_visible']) ? 1 : 0,
+            'is_private' => isset($_POST['is_private']) ? 1 : 0,
+            'allow_original_download' => isset($_POST['allow_original_download']) ? 1 : 0,
+            'private_password' => (string) ($_POST['private_password'] ?? ''),
         ];
+    }
+
+    private function preparePrivateSettings(array &$payload, ?array $existingCategory): bool
+    {
+        if (empty($payload['is_private'])) {
+            $payload['private_password_hash'] = null;
+            $payload['allow_original_download'] = 0;
+            return true;
+        }
+
+        $privatePassword = (string) ($payload['private_password'] ?? '');
+        if ($privatePassword !== '') {
+            if (!$this->isValidPrivatePassword($privatePassword)) {
+                Session::flash('error', 'Private gallery password must be at least 8 characters and include letters, numbers, and symbols.');
+                return false;
+            }
+            $payload['private_password_hash'] = password_hash($privatePassword, PASSWORD_DEFAULT);
+        } elseif (!empty($existingCategory['private_password_hash'])) {
+            $payload['private_password_hash'] = $existingCategory['private_password_hash'];
+        } else {
+            Session::flash('error', 'A password is required for private galleries.');
+            return false;
+        }
+
+        return true;
+    }
+
+    private function isValidPrivatePassword(string $password): bool
+    {
+        return strlen($password) >= 8
+            && preg_match('/[a-z]/i', $password) === 1
+            && preg_match('/[0-9]/', $password) === 1
+            && preg_match('/[^a-z0-9]/i', $password) === 1;
     }
 
     private function slugify(string $value): string

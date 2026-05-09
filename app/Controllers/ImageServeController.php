@@ -3,8 +3,10 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
+use App\Core\Auth;
 use App\Core\Controller;
 use App\Core\ImageProcessor;
+use App\Core\Session;
 use App\Models\Image;
 use App\Models\Setting;
 
@@ -37,6 +39,11 @@ class ImageServeController extends Controller
             http_response_code(404);
             return;
         }
+        if (!$this->canServeImage((int) $image['id'])) {
+            http_response_code(403);
+            echo 'Forbidden';
+            return;
+        }
 
         $path = BASE_PATH . '/storage/' . $folder . '/' . $image['filename'];
         if (!is_file($path)) {
@@ -65,5 +72,37 @@ class ImageServeController extends Controller
         }
 
         readfile($path);
+    }
+
+    private function canServeImage(int $imageId): bool
+    {
+        if (Auth::isMfaVerified()) {
+            return true;
+        }
+
+        $categories = Image::categoriesForImage($imageId);
+        if ($categories === []) {
+            return false;
+        }
+
+        foreach ($categories as $category) {
+            if (!empty($category['is_visible']) && empty($category['is_private'])) {
+                return true;
+            }
+        }
+
+        $access = Session::get('private_gallery_access', []);
+        if (!is_array($access)) {
+            return false;
+        }
+
+        foreach ($categories as $category) {
+            $categoryId = (int) ($category['id'] ?? 0);
+            if (!empty($category['is_visible']) && !empty($category['is_private']) && isset($access[$categoryId])) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

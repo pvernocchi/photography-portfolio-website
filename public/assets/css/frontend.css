@@ -899,6 +899,18 @@ html[data-theme="dark"] .contact-status.error {
   font-weight: var(--font-weight-normal);
 }
 
+.nav-dropdown-section {
+  display: block;
+  padding: var(--space-3) var(--space-4);
+  border-top: 1px solid var(--color-border-light);
+  margin-top: var(--space-2);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: var(--letter-spacing-wide);
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+}
+
 .nav-dropdown-menu a:hover {
   background: var(--color-bg-secondary);
   color: var(--color-accent);
@@ -1107,6 +1119,10 @@ html[data-theme="dark"] .nav-dropdown-menu {
   border-color: var(--color-border-medium);
 }
 
+html[data-theme="dark"] .nav-dropdown-section {
+  border-top-color: var(--color-border-medium);
+}
+
 html[data-theme="dark"] .theme-toggle {
   border-color: var(--color-border-medium);
 }
@@ -1212,6 +1228,20 @@ html[data-theme="dark"] .gallery-card:hover {
     min-height: 60vh;
     padding: var(--space-8) var(--space-4);
   }
+}
+
+.private-gallery-form {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.private-downloads {
+  max-width: 920px;
+  margin: var(--space-8) auto 0;
+}
+
+.private-downloads h2 {
+  margin-bottom: var(--space-4);
 }
 
 @media (max-width: 480px) {
