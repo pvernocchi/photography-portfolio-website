@@ -12,7 +12,7 @@ use App\Core\CSRF;
     <label class="checkbox-row"><input type="checkbox" name="is_visible" value="1" <?= !empty($category['is_visible']) ? 'checked' : '' ?>> Visible</label>
     <label class="checkbox-row"><input type="checkbox" name="is_private" value="1" <?= !empty($category['is_private']) ? 'checked' : '' ?>> Private gallery</label>
     <label>Private gallery password (leave blank to keep current)
-        <input type="password" name="private_password" minlength="8" autocomplete="new-password" placeholder="At least 8 chars, letters, numbers and symbols">
+        <input type="password" name="private_password" minlength="8" autocomplete="new-password" placeholder="At least 8 chars with letters, numbers, and symbols">
     </label>
     <label class="checkbox-row"><input type="checkbox" name="allow_original_download" value="1" <?= !empty($category['allow_original_download']) ? 'checked' : '' ?>> Allow original download</label>
     <label>Cover image

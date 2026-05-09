@@ -151,9 +151,16 @@ class FrontendController extends Controller
         if ($downloadName === '' || $downloadName === '.' || $downloadName === '..') {
             $downloadName = 'photo.jpg';
         }
+        $mimeType = 'application/octet-stream';
+        if (function_exists('mime_content_type')) {
+            $detectedType = mime_content_type($path);
+            if (is_string($detectedType) && $detectedType !== '') {
+                $mimeType = $detectedType;
+            }
+        }
         header('Cache-Control: no-store, no-cache');
         header('X-Content-Type-Options: nosniff');
-        header('Content-Type: image/jpeg');
+        header('Content-Type: ' . $mimeType);
         header('Content-Disposition: attachment; filename="' . $downloadName . '"');
         readfile($path);
     }
