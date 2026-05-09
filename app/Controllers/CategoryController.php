@@ -165,7 +165,7 @@ class CategoryController extends Controller
 
         $privatePassword = (string) ($payload['private_password'] ?? '');
         if ($privatePassword !== '') {
-            if (!$this->isStrongPrivatePassword($privatePassword)) {
+            if (!$this->isValidPrivatePassword($privatePassword)) {
                 Session::flash('error', 'Private gallery password must be at least 8 characters and include letters, numbers, and symbols.');
                 return false;
             }
@@ -180,7 +180,7 @@ class CategoryController extends Controller
         return true;
     }
 
-    private function isStrongPrivatePassword(string $password): bool
+    private function isValidPrivatePassword(string $password): bool
     {
         return strlen($password) >= 8
             && preg_match('/[a-z]/i', $password) === 1
