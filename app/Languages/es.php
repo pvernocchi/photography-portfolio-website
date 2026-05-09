@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 return [
     'nav.gallery' => 'Galería',
+    'nav.private_gallery' => 'Galería privada',
     'nav.about' => 'Sobre mí',
     'nav.contact' => 'Contacto',
     'nav.language' => 'Idioma',
@@ -10,6 +11,10 @@ return [
     'home.explore' => 'Explorar Galería',
     'gallery.title' => 'Galería',
     'gallery.photos' => 'fotografías',
+    'gallery.private_password_label' => 'Contraseña de galería privada',
+    'gallery.private_invalid_password' => 'La contraseña de la galería privada no es válida.',
+    'gallery.unlock' => 'Desbloquear galería',
+    'gallery.download_original' => 'Descargar originales',
     'about.title' => 'Sobre mí',
     'contact.title' => 'Contacto',
     'contact.subtitle' => 'Ponte en contacto',
