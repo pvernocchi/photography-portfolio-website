@@ -87,7 +87,7 @@ jobs:
 
   deploy:
     needs: release
-    uses: ./.github/workflows/deploy.yml
+    uses: ./.github/workflows/deploy-ftp.yml
     with:
       ref: "v${{ needs.release.outputs.new_version }}"
     secrets: inherit
