@@ -144,7 +144,13 @@ class FrontendController extends Controller
             return;
         }
 
-        $downloadName = preg_replace('/[^A-Za-z0-9._-]/', '_', (string) ($image['original_filename'] ?? 'photo.jpg')) ?: 'photo.jpg';
+        $rawFilename = str_replace('\\', '/', (string) ($image['original_filename'] ?? 'photo.jpg'));
+        $downloadName = basename($rawFilename);
+        $downloadName = ltrim($downloadName, '.');
+        $downloadName = preg_replace('/[^A-Za-z0-9._-]/', '_', $downloadName) ?: 'photo.jpg';
+        if ($downloadName === '' || $downloadName === '.' || $downloadName === '..') {
+            $downloadName = 'photo.jpg';
+        }
         header('Cache-Control: no-store, no-cache');
         header('X-Content-Type-Options: nosniff');
         header('Content-Type: image/jpeg');
