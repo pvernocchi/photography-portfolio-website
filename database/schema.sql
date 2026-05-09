@@ -43,6 +43,9 @@ CREATE TABLE categories (
     cover_image_id INT UNSIGNED DEFAULT NULL,
     sort_order INT UNSIGNED DEFAULT 0,
     is_visible TINYINT(1) DEFAULT 1,
+    is_private TINYINT(1) DEFAULT 0,
+    private_password_hash VARCHAR(255) DEFAULT NULL,
+    allow_original_download TINYINT(1) DEFAULT 0,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

@@ -13,7 +13,7 @@ use App\Core\CSRF;
         <?php foreach ($categories as $category): ?>
             <li class="sortable-item" draggable="true" data-id="<?= (int) $category['id'] ?>">
                 <strong><?= e($category['name_en']) ?></strong>
-                <span class="muted">/ <?= e($category['slug']) ?> · <?= (int) $category['images_count'] ?> images</span>
+                <span class="muted">/ <?= e($category['slug']) ?> · <?= (int) $category['images_count'] ?> images<?= !empty($category['is_private']) ? ' · private' : '' ?><?= !empty($category['allow_original_download']) ? ' · original download' : '' ?></span>
                 <div class="actions">
                     <a href="/admin/categories/<?= (int) $category['id'] ?>/images">Images</a>
                     <a href="/admin/categories/<?= (int) $category['id'] ?>/edit">Edit</a>

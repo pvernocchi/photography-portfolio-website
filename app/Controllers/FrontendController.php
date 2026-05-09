@@ -4,8 +4,10 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use App\Core\Controller;
+use App\Core\CSRF;
 use App\Core\Language;
 use App\Core\Mailer;
+use App\Core\Session;
 use App\Core\ThemeEngine;
 use App\Models\Category;
 use App\Models\Image;
@@ -55,6 +57,112 @@ class FrontendController extends Controller
             'metaDescription' => $this->metaDescription(),
             'gaId' => (string) Setting::get('google_analytics_id', ''),
         ], 'frontend');
+    }
+
+    public function privateCategory(string $slug): void
+    {
+        $category = Category::findPrivateBySlug($slug);
+        if ($category === null) {
+            http_response_code(404);
+            echo 'Not found';
+            return;
+        }
+
+        $isUnlocked = $this->hasPrivateGalleryAccess((int) $category['id']);
+
+        $this->render('frontend/gallery/category', [
+            'title' => $this->localizedName($category['name_es'] ?? '', $category['name_en'] ?? ''),
+            'category' => $category,
+            'images' => $isUnlocked ? Image::byCategory((int) $category['id']) : [],
+            'isPrivateLocked' => !$isUnlocked,
+            'privateError' => Session::flash('private_gallery_error'),
+            'allowOriginalDownload' => $isUnlocked && !empty($category['allow_original_download']),
+            'locale' => Language::locale(),
+            'theme' => ThemeEngine::activeTheme(),
+            'metaDescription' => $this->metaDescription(),
+            'gaId' => (string) Setting::get('google_analytics_id', ''),
+        ], 'frontend');
+    }
+
+    public function unlockPrivateCategory(string $slug): void
+    {
+        $category = Category::findPrivateBySlug($slug);
+        if ($category === null) {
+            http_response_code(404);
+            echo 'Not found';
+            return;
+        }
+        if (!CSRF::validate($_POST['csrf_token'] ?? null)) {
+            Session::flash('private_gallery_error', 'Invalid security token.');
+            $this->redirect('/private-gallery/' . $slug);
+        }
+
+        $password = (string) ($_POST['private_password'] ?? '');
+        $passwordHash = (string) ($category['private_password_hash'] ?? '');
+        if ($password === '' || $passwordHash === '' || !password_verify($password, $passwordHash)) {
+            Session::flash('private_gallery_error', __('gallery.private_invalid_password'));
+            $this->redirect('/private-gallery/' . $slug);
+        }
+
+        $access = Session::get('private_gallery_access', []);
+        if (!is_array($access)) {
+            $access = [];
+        }
+        $access[(int) $category['id']] = 1;
+        Session::regenerate();
+        Session::put('private_gallery_access', $access);
+        $this->redirect('/private-gallery/' . $slug);
+    }
+
+    public function downloadPrivateOriginal(string $slug, string $id): void
+    {
+        $category = Category::findPrivateBySlug($slug);
+        if ($category === null) {
+            http_response_code(404);
+            return;
+        }
+        if (empty($category['allow_original_download']) || !$this->hasPrivateGalleryAccess((int) $category['id'])) {
+            http_response_code(403);
+            echo 'Forbidden';
+            return;
+        }
+
+        $imageId = (int) $id;
+        if ($imageId < 1 || !Image::belongsToCategory($imageId, (int) $category['id'])) {
+            http_response_code(404);
+            return;
+        }
+        $image = Image::find($imageId);
+        if ($image === null) {
+            http_response_code(404);
+            return;
+        }
+
+        $path = BASE_PATH . '/storage/originals/' . $image['filename'];
+        if (!is_file($path)) {
+            http_response_code(404);
+            return;
+        }
+
+        $rawFilename = str_replace('\\', '/', (string) ($image['original_filename'] ?? 'photo.jpg'));
+        $downloadName = basename($rawFilename);
+        $downloadName = ltrim($downloadName, '.');
+        $downloadName = preg_replace('/[^A-Za-z0-9._-]/', '_', $downloadName) ?: 'photo.jpg';
+        if ($downloadName === '' || $downloadName === '.' || $downloadName === '..') {
+            $downloadName = 'photo.jpg';
+        }
+        $mimeType = 'application/octet-stream';
+        if (function_exists('mime_content_type')) {
+            $detectedType = mime_content_type($path);
+            if (is_string($detectedType) && $detectedType !== '') {
+                $mimeType = $detectedType;
+            }
+        }
+        header('Cache-Control: no-store, no-cache');
+        header('X-Content-Type-Options: nosniff');
+        header('Content-Type: ' . $mimeType);
+        header('Content-Disposition: attachment; filename="' . $downloadName . '"');
+        readfile($path);
     }
 
     public function about(): void
@@ -327,5 +435,11 @@ class FrontendController extends Controller
     private function localizedName(string $es, string $en): string
     {
         return Language::locale() === 'en' && $en !== '' ? $en : $es;
+    }
+
+    private function hasPrivateGalleryAccess(int $categoryId): bool
+    {
+        $access = Session::get('private_gallery_access', []);
+        return is_array($access) && isset($access[$categoryId]) && (int) $access[$categoryId] === 1;
     }
 }
