@@ -1,0 +1,62 @@
+name: Deploy FTP
+
+on:
+  # push:
+  #  branches:
+  #    - main
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "Branch, tag o SHA a desplegar (ejecución manual)"
+        required: false
+        default: "main"
+  workflow_call:
+    inputs:
+      ref:
+        description: "Branch, tag o SHA a desplegar"
+        required: false
+        default: "main"
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref || github.event.inputs.ref || github.ref }}
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+          tools: composer:v2
+
+      - name: Install production dependencies
+        run: composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
+
+      - name: Upload via FTP
+        uses: SamKirkland/FTP-Deploy-Action@8e83cea8672e3fbcbb9fdafff34debf6ae4c5f65 # v4.3.5
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USER }}
+          password: ${{ secrets.FTP_PASS }}
+          protocol: ${{ secrets.FTP_PROTOCOL || 'ftps' }}
+          server-dir: ${{ secrets.FTP_REMOTE_DIR }}
+          local-dir: ./
+          exclude: |
+            **/.git*
+            **/.github/**
+            **/.env
+            **/.env.*
+            **/config/config.php
+            **/tests/**
+            **/phpunit.xml.dist
+            **/README.md
+            **/INSTALL.md
+            **/UPGRADE.md
+            **/release/**
