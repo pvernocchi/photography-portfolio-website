@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 return [
     'nav.gallery' => 'Gallery',
+    'nav.private_gallery' => 'Private gallery',
     'nav.about' => 'About',
     'nav.contact' => 'Contact',
     'nav.language' => 'Language',
@@ -10,6 +11,10 @@ return [
     'home.explore' => 'Explore Gallery',
     'gallery.title' => 'Gallery',
     'gallery.photos' => 'photos',
+    'gallery.private_password_label' => 'Private gallery password',
+    'gallery.private_invalid_password' => 'The private gallery password is invalid.',
+    'gallery.unlock' => 'Unlock gallery',
+    'gallery.download_original' => 'Download originals',
     'about.title' => 'About',
     'contact.title' => 'Contact',
     'contact.subtitle' => 'Get in touch',
