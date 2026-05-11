@@ -401,6 +401,26 @@ class ImageController extends Controller
         echo json_encode(['ok' => true]);
     }
 
+    public function sortBy(string $id): void
+    {
+        if (!CSRF::validate($_POST['csrf_token'] ?? null)) {
+            Session::flash('error', 'Invalid security token.');
+            $this->redirect('/admin/categories/' . (int) $id . '/images');
+        }
+
+        $categoryId = (int) $id;
+        if (Category::find($categoryId) === null) {
+            Session::flash('error', 'Category not found.');
+            $this->redirect('/admin/categories');
+        }
+
+        $field = (string) ($_POST['field'] ?? '');
+        $direction = (string) ($_POST['direction'] ?? 'asc');
+        Image::sortByField($categoryId, $field, $direction);
+
+        $this->redirect('/admin/categories/' . $categoryId . '/images');
+    }
+
     public function setCover(string $id): void
     {
         header('Content-Type: application/json');

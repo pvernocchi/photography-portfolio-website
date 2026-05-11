@@ -146,6 +146,37 @@ class Image
         }
     }
 
+    /**
+     * Re-sort images in a category by a given field and persist the new sort_order values.
+     *
+     * @param string $field 'filename' or 'upload_date'
+     * @param string $direction 'asc' or 'desc'
+     */
+    public static function sortByField(int $categoryId, string $field, string $direction = 'asc'): void
+    {
+        $allowed = [
+            'filename' => 'i.original_filename',
+            'upload_date' => 'i.created_at',
+        ];
+        if (!isset($allowed[$field])) {
+            return;
+        }
+
+        $dir = strtoupper($direction) === 'DESC' ? 'DESC' : 'ASC';
+        $col = $allowed[$field];
+
+        $pdo = Database::instance()->pdo();
+        $sql = "SELECT i.id FROM images i
+                INNER JOIN image_category ic ON ic.image_id = i.id
+                WHERE ic.category_id = :category_id
+                ORDER BY $col $dir, i.id ASC";
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute([':category_id' => $categoryId]);
+        $ids = array_column($stmt->fetchAll() ?: [], 'id');
+
+        self::reorder($categoryId, $ids);
+    }
+
     public static function assignCategories(int $imageId, array $categoryIds): void
     {
         $pdo = Database::instance()->pdo();

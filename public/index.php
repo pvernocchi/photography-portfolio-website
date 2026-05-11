@@ -119,6 +119,7 @@ $router->group('/admin', [], static function (Router $router): void {
         $router->post('/images/assign', [ImageController::class, 'saveAssign']);
         $router->get('/categories/{id}/images', [ImageController::class, 'index']);
         $router->post('/categories/{id}/images/reorder', [ImageController::class, 'reorder']);
+        $router->post('/categories/{id}/images/sort-by', [ImageController::class, 'sortBy']);
         $router->post('/categories/{id}/images/set-cover', [ImageController::class, 'setCover']);
         $router->get('/images/{id}/edit', [ImageController::class, 'edit']);
         $router->post('/images/{id}/update', [ImageController::class, 'update']);
