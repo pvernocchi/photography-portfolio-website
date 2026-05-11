@@ -416,6 +416,15 @@ class ImageController extends Controller
 
         $field = (string) ($_POST['field'] ?? '');
         $direction = (string) ($_POST['direction'] ?? 'asc');
+
+        if (!in_array($field, ['filename', 'upload_date'], true)) {
+            Session::flash('error', 'Invalid sort field.');
+            $this->redirect('/admin/categories/' . $categoryId . '/images');
+        }
+        if (!in_array($direction, ['asc', 'desc'], true)) {
+            $direction = 'asc';
+        }
+
         Image::sortByField($categoryId, $field, $direction);
 
         $this->redirect('/admin/categories/' . $categoryId . '/images');
