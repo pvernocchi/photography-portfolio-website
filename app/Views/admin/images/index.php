@@ -21,6 +21,34 @@ use App\Core\CSRF;
         <a class="tab-btn <?= (int) $cat['id'] === (int) $category['id'] ? 'active' : '' ?>" href="/admin/categories/<?= (int) $cat['id'] ?>/images"><?= e($cat['name_en']) ?></a>
     <?php endforeach; ?>
 </nav>
+<div class="sort-bar" style="display:flex;gap:0.5rem;margin-bottom:1rem;align-items:center;flex-wrap:wrap">
+    <span class="muted" style="font-size:0.875rem">Sort by:</span>
+    <form method="post" action="/admin/categories/<?= (int) $category['id'] ?>/images/sort-by" style="display:inline">
+        <?= CSRF::field() ?>
+        <input type="hidden" name="field" value="filename">
+        <input type="hidden" name="direction" value="asc">
+        <button type="submit" class="btn-link" style="font-size:0.875rem">Filename A→Z</button>
+    </form>
+    <form method="post" action="/admin/categories/<?= (int) $category['id'] ?>/images/sort-by" style="display:inline">
+        <?= CSRF::field() ?>
+        <input type="hidden" name="field" value="filename">
+        <input type="hidden" name="direction" value="desc">
+        <button type="submit" class="btn-link" style="font-size:0.875rem">Filename Z→A</button>
+    </form>
+    <form method="post" action="/admin/categories/<?= (int) $category['id'] ?>/images/sort-by" style="display:inline">
+        <?= CSRF::field() ?>
+        <input type="hidden" name="field" value="upload_date">
+        <input type="hidden" name="direction" value="desc">
+        <button type="submit" class="btn-link" style="font-size:0.875rem">Newest first</button>
+    </form>
+    <form method="post" action="/admin/categories/<?= (int) $category['id'] ?>/images/sort-by" style="display:inline">
+        <?= CSRF::field() ?>
+        <input type="hidden" name="field" value="upload_date">
+        <input type="hidden" name="direction" value="asc">
+        <button type="submit" class="btn-link" style="font-size:0.875rem">Oldest first</button>
+    </form>
+    <span class="muted" style="font-size:0.875rem">· drag &amp; drop for manual order</span>
+</div>
 <div class="image-grid" id="image-sortable" data-bulk-grid="true">
     <?php foreach ($images as $image): ?>
     <article class="card image-card sortable-item" draggable="true" data-id="<?= (int) $image['id'] ?>">
